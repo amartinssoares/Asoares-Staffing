@@ -1816,6 +1816,7 @@ function PublicSite() {
         <div style={{ display: "flex", gap: 20 }}>
           <a href="tel:+13855742014" style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, textDecoration: "none" }}>(385) 574-2014</a>
           <a href="mailto:amartinssoares3@gmail.com" style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, textDecoration: "none" }}>amartinssoares3@gmail.com</a>
+          <span onClick={() => setMode('login')} title="Admin" style={{ color: "rgba(255,255,255,0.12)", fontSize: 14, cursor: "pointer", userSelect: "none" }}>⚙</span>
         </div>
       </div>
     </div>
@@ -1852,6 +1853,12 @@ const btnRed = {
 export default function App() {
   const [mode, setMode] = useState("public"); // public | login | dashboard
   const [authed, setAuthed] = useState(false);
+
+  // URL routing
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path.includes('dashboard')) setMode('login');
+  }, []);
 
   useEffect(() => {
     // Page title
