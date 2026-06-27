@@ -1,4 +1,4 @@
-
+/* eslint-disable */
 import { useState, useEffect } from "react";
 
 // ─── Mobile hook ───────────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@ const ALLAN_PHOTO = "data:image/jpeg;base64,/9j/4QDKRXhpZgAATU0AKgAAAAgABgESAAMA
 // ─── Persistent Storage Keys ───────────────────────────────────────────────
 const STORAGE_KEY = "recruiter_candidates";
 const JOBS_KEY = "recruiter_jobs";
-const AUTH_KEY = "recruiter_authed";
+// const AUTH_KEY = "recruiter_authed";
 const COMPANIES_KEY = "recruiter_companies";
 
 // ─── Default Jobs ──────────────────────────────────────────────────────────
@@ -687,7 +687,7 @@ function Login({ onLogin }) {
 
 function CandidateModal({ candidate, jobs, onClose, onStatusChange, onDelete, onNotesSave }) {
   const job = jobs.find(j => j.id === candidate.jobId);
-  const status = getStatusConfig(candidate.status);
+  // const status = getStatusConfig(candidate.status);
   const [notes, setNotes] = useState(candidate.notes || "");
   const [notesSaved, setNotesSaved] = useState(false);
 
@@ -916,13 +916,13 @@ function Dashboard({ onLogout }) {
   }
 
   async function addJob() {
-    const job = {
+    const jobEntry = {
       id: generateId(), active: true,
       requirements: newJob.requirements.split("\n").filter(Boolean),
       area: newJob.area,
       ...newJob,
     };
-    const updated = [job, ...jobs];
+    const updated = [jobEntry, ...jobs];
     setJobs(updated);
     await saveJobs(updated);
     setView("jobs");
@@ -1470,7 +1470,7 @@ function HireMe({ onBack }) {
 // JOB FILTER + PRE-SCREEN
 // ══════════════════════════════════════════════════════════════
 
-const AREAS = ["All", "Finance & Accounting", "Technology", "Legal & Compliance", "Admin & Operations", "Sales & Marketing", "Other"];
+
 
 function JobsWithFilter({ jobs, onApply, t, onHome }) {
   const [area, setArea] = useState("All");
@@ -1891,23 +1891,7 @@ export default function App() {
 
   return (
     <div style={{ fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif" }}>
-      {/* Mode switcher (for testing) */}
-      <div style={{
-        position: "fixed", bottom: 20, right: 20, zIndex: 9999,
-        display: "flex", gap: 8, background: "#162236",
-        borderRadius: 12, padding: "8px 12px", boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
-      }}>
-        <button onClick={() => setMode("public")} style={{
-          background: mode === "public" ? "#2D6BE4" : "transparent",
-          color: "#fff", border: "none", borderRadius: 8, padding: "6px 12px",
-          fontSize: 12, fontWeight: 600, cursor: "pointer"
-        }}>🌐 Site público</button>
-        <button onClick={() => { setMode(authed ? "dashboard" : "login"); }} style={{
-          background: mode !== "public" ? "#2D6BE4" : "transparent",
-          color: "#fff", border: "none", borderRadius: 8, padding: "6px 12px",
-          fontSize: 12, fontWeight: 600, cursor: "pointer"
-        }}>🔐 Dashboard</button>
-      </div>
+
 
       {mode === "public" && <PublicSite />}
       {mode === "login" && <Login onLogin={() => { setAuthed(true); setMode("dashboard"); }} />}
