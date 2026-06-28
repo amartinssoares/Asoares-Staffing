@@ -1755,7 +1755,7 @@ function PublicSite() {
       )}
 
       {/* ── Hero ── */}
-      <div style={{ backgroundImage: "url(https://images.unsplash.com/photo-1546708770-599a3abdf230?w=1600&q=80&auto=format&fit=crop)", backgroundSize: "cover", backgroundPosition: "center", padding: isMobile ? "44px 20px 40px" : "88px 24px 80px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+      <div style={{ backgroundImage: "url(https://images.pexels.com/photos/1151418/pexels-photo-1151418.jpeg?auto=compress&cs=tinysrgb&w=1600)", backgroundSize: "cover", backgroundPosition: "center", padding: isMobile ? "44px 20px 40px" : "88px 24px 80px", textAlign: "center", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(8,13,26,0.78) 0%, rgba(8,13,26,0.62) 50%, rgba(8,13,26,0.85) 100%)", pointerEvents: "none" }} />
 
         <div style={{ position: "relative", maxWidth: 700, margin: "0 auto", zIndex: 1 }}>
