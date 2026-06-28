@@ -348,7 +348,7 @@ function JobCard({ job, onApply, t, onHome }) {
       style={{
         background: hovered ? P.surfaceHover : P.white,
         borderRadius: 16, padding: isMobile ? "20px 18px" : "28px 32px",
-        border: `1.5px solid ${hovered ? P.blue : P.border}`,
+        border: (hovered ? "1.5px solid #1B4FD8" : "1.5px solid #E2E6EE"),
         transition: "all 0.2s",
         boxShadow: hovered ? "0 8px 32px rgba(27,79,216,0.12)" : "0 1px 6px rgba(10,22,40,0.06)",
       }}>
@@ -378,13 +378,13 @@ function JobCard({ job, onApply, t, onHome }) {
           { icon: <Icon.Clock />, text: job.hours },
           { icon: <Icon.Globe />, text: `${tl.fields.english}: ${job.english}` },
         ].map((tag, i) => (
-          <span key={i} style={{ display: "flex", alignItems: "center", gap: 6, background: P.surfaceAlt, color: P.textMid, fontSize: 11, fontWeight: 600, padding: "5px 11px", borderRadius: 7, border: `1px solid ${P.border}` }}>
+          <span key={i} style={{ display: "flex", alignItems: "center", gap: 6, background: P.surfaceAlt, color: P.textMid, fontSize: 11, fontWeight: 600, padding: "5px 11px", borderRadius: 7, border: "1px solid #E2E6EE" }}>
             <span style={{ color: P.textMuted }}>{tag.icon}</span>{tag.text}
           </span>
         ))}
       </div>
 
-      <div style={{ borderTop: `1px solid ${P.border}`, paddingTop: 16, marginBottom: 20 }}>
+      <div style={{ borderTop: "1px solid #E2E6EE", paddingTop: 16, marginBottom: 20 }}>
         <div style={{ fontSize: 10, fontWeight: 800, color: P.textMuted, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>{tl.requirements}</div>
         <ul style={{ margin: 0, paddingLeft: 16 }}>
           {job.requirements.map((r, i) => (
@@ -609,7 +609,7 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
         </label>
         <label style={{
           display: "flex", alignItems: "center", gap: 14, cursor: "pointer",
-          border: `2px dashed ${errors.resume ? "#EF4444" : resume ? "#059669" : "#BFCFFE"}`,
+          border: (errors.resume ? "2px dashed #EF4444" : resume ? "2px dashed #059669" : "2px dashed #BFCFFE"),
           borderRadius: 12, padding: "20px 24px", background: resume ? "#F0FDF4" : "#F8FAFD",
           transition: "all 0.2s"
         }}>
@@ -671,7 +671,7 @@ function Login({ onLogin }) {
         <input type="password" value={pw} onChange={e => setPw(e.target.value)}
           onKeyDown={e => e.key === "Enter" && attempt()}
           placeholder="Senha" style={{
-            width: "100%", boxSizing: "border-box", background: "#0D1F3C", border: `1px solid ${err ? "#EF4444" : "#334155"}`,
+            width: "100%", boxSizing: "border-box", background: "#0D1F3C", border: (err ? "1px solid #EF4444" : "1px solid #334155"),
             borderRadius: 10, padding: "12px 16px", color: "#F8FAFC", fontSize: 15, marginBottom: 16, outline: "none"
           }} />
         {err && <div style={{ color: "#EF4444", fontSize: 13, marginBottom: 12, textAlign: "center" }}>Senha incorreta</div>}
@@ -828,7 +828,7 @@ function CandidateModal({ candidate, jobs, onClose, onStatusChange, onDelete, on
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {STATUSES.map(s => (
               <button key={s.key} onClick={() => onStatusChange(candidate.id, s.key)} style={{
-                padding: "7px 14px", borderRadius: 8, border: `2px solid ${s.color}`,
+                padding: "7px 14px", borderRadius: 8, border: ("2px solid " + s.color),
                 background: candidate.status === s.key ? s.color : "transparent",
                 color: candidate.status === s.key ? "#fff" : s.color,
                 fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "all 0.15s"
@@ -1348,7 +1348,7 @@ function HireMe({ onBack }) {
 
   if (submitted) return (
     <div style={{ minHeight: "100vh", background: P.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <div style={{ textAlign: "center", maxWidth: 440, background: P.surface, border: `1px solid ${P.border}`, borderRadius: 24, padding: "56px 40px", boxShadow: "0 4px 24px rgba(15,32,68,0.08)" }}>
+      <div style={{ textAlign: "center", maxWidth: 440, background: P.surface, border: "1px solid #E2E6EE", borderRadius: 24, padding: "56px 40px", boxShadow: "0 4px 24px rgba(15,32,68,0.08)" }}>
         <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#EEF2FF", border: "2px solid #1B4FD8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 20px" }}>🤝</div>
         <h2 style={{ fontSize: 26, fontWeight: 900, color: P.navy, marginBottom: 10 }}>Request received!</h2>
         <p style={{ color: P.textMid, fontSize: 14, lineHeight: 1.75, marginBottom: 32 }}>
@@ -1361,7 +1361,7 @@ function HireMe({ onBack }) {
 
   const Section = ({ icon, iconBg, title, sub, children }) => (
     <div style={{ marginBottom: 32 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, paddingBottom: 16, borderBottom: `1px solid ${P.border}` }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #E2E6EE" }}>
         <div style={{ width: 38, height: 38, background: iconBg, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{icon}</div>
         <div>
           <div style={{ fontWeight: 800, fontSize: 15, color: P.navy }}>{title}</div>
@@ -1400,7 +1400,7 @@ function HireMe({ onBack }) {
             { icon: "🗣️", bg: "#EEF2FF", title: "Trilingual: EN/PT/ES", desc: "Candidates interviewed in their own language. No miscommunication, no lost talent." },
             { icon: "⚡", bg: "#F0FDF4", title: "Fast & Vetted", desc: "Pre-screened candidates with verified English, U.S. market experience, and strong references." },
           ].map((v, i) => (
-            <div key={i} style={{ background: P.surface, border: `1px solid ${P.border}`, borderRadius: 14, padding: "22px 18px", boxShadow: "0 2px 8px rgba(15,32,68,0.05)" }}>
+            <div key={i} style={{ background: P.surface, border: "1px solid #E2E6EE", borderRadius: 14, padding: "22px 18px", boxShadow: "0 2px 8px rgba(15,32,68,0.05)" }}>
               <div style={{ width: 44, height: 44, background: v.bg, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, marginBottom: 12 }}>{v.icon}</div>
               <div style={{ fontWeight: 800, fontSize: 14, color: P.navy, marginBottom: 6 }}>{v.title}</div>
               <div style={{ color: P.textMuted, fontSize: 13, lineHeight: 1.65 }}>{v.desc}</div>
@@ -1409,7 +1409,7 @@ function HireMe({ onBack }) {
         </div>
 
         {/* Form */}
-        <div style={{ background: P.surface, borderRadius: 20, padding: "36px", border: `1px solid ${P.border}`, boxShadow: "0 4px 20px rgba(15,32,68,0.06)", marginBottom: 48 }}>
+        <div style={{ background: P.surface, borderRadius: 20, padding: "36px", border: "1px solid #E2E6EE", boxShadow: "0 4px 20px rgba(15,32,68,0.06)", marginBottom: 48 }}>
           <Section icon="👤" iconBg="#EEF2FF" title="Your Contact Info" sub="Who should Allan reach out to?">
             <div style={{ display: "grid", gridTemplateColumns: cols, gap: "0 24px" }}>
               <Field label="Your name" k="contactName" placeholder="Jane Smith" required />
@@ -1572,7 +1572,7 @@ function PreScreen({ job, t, lang, onBack }) {
   }
 
   if (step === "disqualified") return (
-    <div style={{ background: P.white, borderRadius: 20, padding: "48px 32px", border: `1px solid ${P.border}`, textAlign: "center", boxShadow: "0 4px 20px rgba(10,22,40,0.07)" }}>
+    <div style={{ background: P.white, borderRadius: 20, padding: "48px 32px", border: "1px solid #E2E6EE", textAlign: "center", boxShadow: "0 4px 20px rgba(10,22,40,0.07)" }}>
       <div style={{ fontSize: 48, marginBottom: 16 }}>🙏</div>
       <h3 style={{ fontSize: 22, fontWeight: 900, color: P.navy, marginBottom: 10 }}>
         {lang === "pt" ? "Obrigado pelo interesse!" : lang === "es" ? "¡Gracias por tu interés!" : "Thank you for your interest!"}
@@ -1585,14 +1585,14 @@ function PreScreen({ job, t, lang, onBack }) {
           : "At this moment, this role requires advanced English, U.S. market experience, and Mountain Time availability. Keep developing these skills — new opportunities will come!"}
       </p>
       <button onClick={() => { if (onBack) onBack(); else { setCurrent(0); setAnswers({}); setStep("questions"); } }}
-        style={{ background: "none", border: `1.5px solid ${P.border}`, borderRadius: 10, padding: "10px 22px", fontSize: 13, color: P.textMid, fontWeight: 600, cursor: "pointer" }}>
+        style={{ background: "none", border: "1.5px solid #E2E6EE", borderRadius: 10, padding: "10px 22px", fontSize: 13, color: P.textMid, fontWeight: 600, cursor: "pointer" }}>
         ← {lang === "pt" ? "Voltar para vagas" : lang === "es" ? "Volver a empleos" : "Back to jobs"}
       </button>
     </div>
   );
 
   if (step === "form") return (
-    <div style={{ background: P.white, borderRadius: 20, padding: isMobile ? "24px 18px" : "36px 40px", border: `1px solid ${P.border}`, boxShadow: "0 4px 20px rgba(10,22,40,0.07)" }}>
+    <div style={{ background: P.white, borderRadius: 20, padding: isMobile ? "24px 18px" : "36px 40px", border: "1px solid #E2E6EE", boxShadow: "0 4px 20px rgba(10,22,40,0.07)" }}>
       <ApplicationForm job={job} onBack={() => setStep("questions")} onSubmit={() => {}} lang={lang} t={t} />
     </div>
   );
@@ -1602,7 +1602,7 @@ function PreScreen({ job, t, lang, onBack }) {
   const progress = ((current) / questions.length) * 100;
 
   return (
-    <div style={{ background: P.white, borderRadius: 20, padding: "24px 18px", border: `1px solid ${P.border}`, boxShadow: "0 4px 20px rgba(10,22,40,0.07)" }}>
+    <div style={{ background: P.white, borderRadius: 20, padding: "24px 18px", border: "1px solid #E2E6EE", boxShadow: "0 4px 20px rgba(10,22,40,0.07)" }}>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
@@ -1613,7 +1613,7 @@ function PreScreen({ job, t, lang, onBack }) {
         </div>
         {/* Progress bar */}
         <div style={{ height: 3, background: P.surfaceAlt, borderRadius: 99, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${progress}%`, background: P.blue, borderRadius: 99, transition: "width 0.3s" }} />
+          <div style={{ height: "100%", width: (progress + "%"), background: P.blue, borderRadius: 99, transition: "width 0.3s" }} />
         </div>
       </div>
 
@@ -1622,7 +1622,7 @@ function PreScreen({ job, t, lang, onBack }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {q.options.map((opt, idx) => (
           <button key={idx} onClick={() => handleAnswer(idx)} style={{
-            background: P.white, border: `1.5px solid ${P.border}`,
+            background: P.white, border: "1.5px solid #E2E6EE",
             borderRadius: 12, padding: "14px 18px", textAlign: "left",
             fontSize: 14, color: P.textMid, fontWeight: 500, cursor: "pointer",
             transition: "all 0.15s", display: "flex", alignItems: "center", gap: 12,
@@ -1630,7 +1630,7 @@ function PreScreen({ job, t, lang, onBack }) {
             onMouseEnter={e => { e.currentTarget.style.borderColor = P.blue; e.currentTarget.style.background = P.blueLight; e.currentTarget.style.color = P.navy; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = P.border; e.currentTarget.style.background = P.white; e.currentTarget.style.color = P.textMid; }}
           >
-            <div style={{ width: 28, height: 28, borderRadius: "50%", border: `1.5px solid ${P.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: P.textMuted, flexShrink: 0 }}>
+            <div style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid #E2E6EE", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: P.textMuted, flexShrink: 0 }}>
               {String.fromCharCode(65 + idx)}
             </div>
             {opt}
@@ -1674,7 +1674,7 @@ function PublicSite() {
       <div style={{ position: "sticky", top: 0, zIndex: 100, background: P.navy, padding: "0 16px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 2px 16px rgba(10,22,40,0.18)" }}>
         <button onClick={() => { setApplying(null); setHireMe(false); setAboutOpen(false); setMenuOpen(false); }}
           style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: P.blue, boxShadow: `0 0 10px ${P.blue}88` }} />
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: P.blue, boxShadow: "0 0 10px rgba(27,79,216,0.53)" }} />
           <span style={{ color: "#fff", fontWeight: 900, fontSize: 16, letterSpacing: -0.5 }}>
             Asoares <span style={{ color: P.blueMid }}>Intl. Staffing</span>
           </span>
@@ -1708,12 +1708,12 @@ function PublicSite() {
 
       {/* ── Dropdown ── */}
       {menuOpen && (
-        <div style={{ position: "fixed", top: 68, right: 16, zIndex: 200, background: P.white, width: 230, border: `1px solid ${P.border}`, borderRadius: 14, boxShadow: "0 12px 40px rgba(10,22,40,0.14)", overflow: "hidden" }}>
+        <div style={{ position: "fixed", top: 68, right: 16, zIndex: 200, background: P.white, width: 230, border: "1px solid #E2E6EE", borderRadius: 14, boxShadow: "0 12px 40px rgba(10,22,40,0.14)", overflow: "hidden" }}>
           {[
             { icon: "👤", label: t.about, action: () => { setAboutOpen(true); setMenuOpen(false); } },
             { icon: "🤝", label: "Hire a Recruiter", action: () => { setHireMe(true); setMenuOpen(false); } },
           ].map((item, i) => (
-            <button key={i} onClick={item.action} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", background: "none", border: "none", borderBottom: `1px solid ${P.border}`, padding: "14px 18px", color: P.navy, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+            <button key={i} onClick={item.action} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", background: "none", border: "none", borderBottom: "1px solid #E2E6EE", padding: "14px 18px", color: P.navy, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
               onMouseEnter={e => e.currentTarget.style.background = P.blueLight}
               onMouseLeave={e => e.currentTarget.style.background = "none"}>
               <span>{item.icon}</span>{item.label}
@@ -1728,19 +1728,19 @@ function PublicSite() {
       {/* ── About Drawer ── */}
       {aboutOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(10,22,40,0.45)", backdropFilter: "blur(4px)", display: "flex", alignItems: "flex-end" }} onClick={() => setAboutOpen(false)}>
-          <div style={{ width: "100%", background: P.white, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderTop: `3px solid ${P.blue}`, maxHeight: "90vh", overflowY: "auto", padding: "28px 24px 44px" }} onClick={e => e.stopPropagation()}>
+          <div style={{ width: "100%", background: P.white, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderTop: "3px solid #1B4FD8", maxHeight: "90vh", overflowY: "auto", padding: "28px 24px 44px" }} onClick={e => e.stopPropagation()}>
             <div style={{ width: 32, height: 3, background: P.border, borderRadius: 99, margin: "0 auto 24px" }} />
             <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 18, flexWrap: "wrap" }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
-                <img src={ALLAN_PHOTO} alt="Allan Soares" style={{ width: 80, height: 80, borderRadius: 14, objectFit: "cover", objectPosition: "center top", border: `2px solid ${P.blue}` }} />
-                <div style={{ position: "absolute", bottom: -3, right: -3, width: 16, height: 16, background: "#22C55E", borderRadius: "50%", border: `2px solid ${P.white}` }} />
+                <img src={ALLAN_PHOTO} alt="Allan Soares" style={{ width: 80, height: 80, borderRadius: 14, objectFit: "cover", objectPosition: "center top", border: "2px solid #1B4FD8" }} />
+                <div style={{ position: "absolute", bottom: -3, right: -3, width: 16, height: 16, background: "#22C55E", borderRadius: "50%", border: "2px solid #FFFFFF" }} />
               </div>
               <div>
                 <h2 style={{ fontSize: 20, fontWeight: 900, color: P.navy, margin: "0 0 3px" }}>Allan Soares</h2>
                 <p style={{ color: P.blue, fontSize: 12, fontWeight: 700, margin: "0 0 10px", lineHeight: 1.5 }}>{t.aboutPitch}</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                   {t.aboutHighlights.map((h, i) => (
-                    <span key={i} style={{ background: P.blueLight, color: P.blue, fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 99, border: `1px solid ${P.blueBorder}` }}>{h}</span>
+                    <span key={i} style={{ background: P.blueLight, color: P.blue, fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 99, border: "1px solid #C7D7F5" }}>{h}</span>
                   ))}
                 </div>
               </div>
@@ -1749,7 +1749,7 @@ function PublicSite() {
             <a href="https://www.linkedin.com/in/allan-soares-161057367" target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#0A66C2", color: "#fff", textDecoration: "none", borderRadius: 10, padding: "10px 18px", fontSize: 13, fontWeight: 700 }}>
               💼 {t.linkedinBtn}
             </a>
-            <button onClick={() => setAboutOpen(false)} style={{ display: "block", marginTop: 10, background: "none", border: `1px solid ${P.border}`, borderRadius: 10, padding: "10px", fontSize: 13, color: P.textMuted, fontWeight: 600, cursor: "pointer", width: "100%" }}>✕ Close</button>
+            <button onClick={() => setAboutOpen(false)} style={{ display: "block", marginTop: 10, background: "none", border: "1px solid #E2E6EE", borderRadius: 10, padding: "10px", fontSize: 13, color: P.textMuted, fontWeight: 600, cursor: "pointer", width: "100%" }}>✕ Close</button>
           </div>
         </div>
       )}
@@ -1759,7 +1759,7 @@ function PublicSite() {
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(8,13,26,0.78) 0%, rgba(8,13,26,0.62) 50%, rgba(8,13,26,0.85) 100%)", pointerEvents: "none" }} />
 
       {/* Blue accent bar */}
-      <div style={{ height: 3, background: `linear-gradient(90deg, ${P.navy}, ${P.blue}, ${P.blueMid}, ${P.navy})` }} />
+      <div style={{ height: 3, background: "linear-gradient(90deg, #0A1628, #1B4FD8, #2563EB, #0A1628)" }} />
 
       {/* ── Jobs ── */}
       <div style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "28px 16px 40px" : "52px 24px 60px" }}>
@@ -1779,7 +1779,7 @@ function PublicSite() {
       </div>
 
       {/* ── Footer ── */}
-      <div style={{ background: P.navy, borderTop: `3px solid ${P.blue}`, padding: "24px 28px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+      <div style={{ background: P.navy, borderTop: "3px solid #1B4FD8", padding: "24px 28px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: P.blue }} />
           <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 12 }}>{t.footerBy} <strong style={{ color: "#93B4F7" }}>Asoares International Staffing</strong></span>
@@ -1798,7 +1798,7 @@ function PublicSite() {
 
 const inputStyle = (err) => ({
   width: "100%", boxSizing: "border-box",
-  border: `1.5px solid ${err ? "#DC2626" : "#E2E6EE"}`,
+  border: (err ? "1.5px solid #DC2626" : "1.5px solid #E2E6EE"),
   borderRadius: 10, padding: "11px 14px", fontSize: 14,
   outline: "none", color: "#0A1628", background: "#FAFBFD",
   fontFamily: "inherit",
