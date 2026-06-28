@@ -1662,6 +1662,8 @@ function PublicSite() {
   const t = T[lang];
 
   useEffect(() => { loadJobs().then(setJobs); }, []);
+
+
   const activeJobs = jobs.filter(j => j.active);
   if (hireMe) return <HireMe onBack={() => setHireMe(false)} />;
 
@@ -1753,39 +1755,8 @@ function PublicSite() {
       )}
 
       {/* ── Hero ── */}
-      <div style={{ background: P.navy, padding: "88px 24px 80px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-        {/* Subtle grid overlay */}
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle, rgba(27,79,216,0.12) 1px, transparent 1px)", backgroundSize: "32px 32px", pointerEvents: "none" }} />
-        {/* Blue glow */}
-        <div style={{ position: "absolute", top: -100, left: "50%", transform: "translateX(-50%)", width: 600, height: 400, background: "radial-gradient(ellipse, rgba(27,79,216,0.25) 0%, transparent 65%)", pointerEvents: "none" }} />
-
-        <div style={{ maxWidth: 700, margin: "0 auto", position: "relative" }}>
-          {/* Live badge */}
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(27,79,216,0.2)", border: "1px solid rgba(37,99,235,0.35)", borderRadius: 99, padding: isMobile ? "5px 12px" : "6px 16px", marginBottom: isMobile ? 20 : 32 }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", boxShadow: "0 0 8px #22C55E" }} />
-            <span style={{ color: "#93B4F7", fontSize: isMobile ? 9 : 11, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase" }}>{t.tagline}</span>
-          </div>
-
-                    {isMobile ? (
-            <h1 style={{ color: "#FFFFFF", fontSize: 24, fontWeight: 900, margin: "0 0 18px", lineHeight: 1.25, letterSpacing: -0.3, textAlign: "center" }}>
-              {t.hero.split("—")[0].trim()}{" "}
-              <span style={{ background: "linear-gradient(90deg, #4F8EF7, #93B4F7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                {t.hero.includes("—") ? t.hero.split("—")[1].trim() : ""}
-              </span>
-            </h1>
-          ) : (
-            <>
-              <h1 style={{ color: "#FFFFFF", fontSize: 52, fontWeight: 900, margin: "0 0 4px", lineHeight: 1.05, letterSpacing: -2 }}>
-                {t.hero.split("—")[0].trim()}
-              </h1>
-              <h1 style={{ background: "linear-gradient(90deg, #4F8EF7, #93B4F7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontSize: 52, fontWeight: 900, margin: "0 0 28px", lineHeight: 1.05, letterSpacing: -2 }}>
-                {t.hero.includes("—") ? "— " + t.hero.split("—")[1].trim() : ""}
-              </h1>
-            </>
-          )}
-          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 17, lineHeight: 1.8, maxWidth: 500, margin: "0 auto" }}>{t.heroSub}</p>
-        </div>
-      </div>
+      <div style={{ backgroundImage: "url(https://images.unsplash.com/photo-1546708770-599a3abdf230?w=1600&q=80&auto=format&fit=crop)", backgroundSize: "cover", backgroundPosition: "center", padding: isMobile ? "44px 20px 40px" : "88px 24px 80px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(8,13,26,0.78) 0%, rgba(8,13,26,0.62) 50%, rgba(8,13,26,0.85) 100%)", pointerEvents: "none" }} />
 
       {/* Blue accent bar */}
       <div style={{ height: 3, background: `linear-gradient(90deg, ${P.navy}, ${P.blue}, ${P.blueMid}, ${P.navy})` }} />
