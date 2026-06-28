@@ -248,39 +248,35 @@ function generateId() {
 // ─── Storage ───────────────────────────────────────────────────────────────
 async function loadCandidates() {
   try {
-    const result = await window.storage.get(STORAGE_KEY);
-    return result ? JSON.parse(result.value) : [];
-  } catch {
-    return [];
-  }
+    const data = localStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch { return []; }
 }
 
 async function saveCandidates(candidates) {
-  await window.storage.set(STORAGE_KEY, JSON.stringify(candidates));
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(candidates)); } catch {}
 }
 
 async function loadCompanyLeads() {
   try {
-    const result = await window.storage.get(COMPANIES_KEY);
-    return result ? JSON.parse(result.value) : [];
+    const data = localStorage.getItem(COMPANIES_KEY);
+    return data ? JSON.parse(data) : [];
   } catch { return []; }
 }
 
 async function saveCompanyLeads(leads) {
-  await window.storage.set(COMPANIES_KEY, JSON.stringify(leads));
+  try { localStorage.setItem(COMPANIES_KEY, JSON.stringify(leads)); } catch {}
 }
 
 async function loadJobs() {
   try {
-    const result = await window.storage.get(JOBS_KEY);
-    return result ? JSON.parse(result.value) : DEFAULT_JOBS;
-  } catch {
-    return DEFAULT_JOBS;
-  }
+    const data = localStorage.getItem(JOBS_KEY);
+    return data ? JSON.parse(data) : DEFAULT_JOBS;
+  } catch { return DEFAULT_JOBS; }
 }
 
 async function saveJobs(jobs) {
-  await window.storage.set(JOBS_KEY, JSON.stringify(jobs));
+  try { localStorage.setItem(JOBS_KEY, JSON.stringify(jobs)); } catch {}
 }
 
 // ─── ICONS ────────────────────────────────────────────────────────────────
