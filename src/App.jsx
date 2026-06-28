@@ -573,7 +573,6 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
   }
 
   // Simple ref-based input — no re-render on type
-  const [errors, setErrors] = React.useState({});
   const [selectVals, setSelectVals] = React.useState({ english: "", availability: "" });
   const setSelect = (k, v) => setSelectVals(s => ({ ...s, [k]: v }));
 
