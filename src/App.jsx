@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 // ─── Mobile hook ───────────────────────────────────────────────────────────────
 function useIsMobile() {
@@ -406,6 +406,42 @@ function JobCard({ job, onApply, t, onHome }) {
     </div>
   );
 }
+// ══════════════════════════════════════════════════════════════
+// STANDALONE FORM FIELD (prevents keyboard dismiss on mobile)
+// ══════════════════════════════════════════════════════════════
+function FormField({ label, k, type, placeholder, options, required, maxLen, form, onSet, errors }) {
+  const handleChange = (e) => {
+    const val = e.target.value;
+    if (!maxLen || val.length <= maxLen) onSet(k, val);
+  };
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>
+        {label} {required && <span style={{ color: "#EF4444" }}>*</span>}
+      </label>
+      {options ? (
+        <select value={form[k]} onChange={handleChange} style={inputStyle(errors[k])}>
+          <option value="">Select...</option>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : type === "textarea" ? (
+        <div style={{ position: "relative" }}>
+          <textarea value={form[k]} onChange={handleChange}
+            placeholder={placeholder} rows={4} style={{ ...inputStyle(errors[k]), resize: "vertical" }} />
+          {maxLen && <div style={{ position: "absolute", bottom: 8, right: 10, fontSize: 10, color: (form[k]||"").length > maxLen * 0.9 ? "#EF4444" : "#9CA3AF", fontWeight: 600 }}>
+            {(form[k]||"").length}/{maxLen}
+          </div>}
+        </div>
+      ) : (
+        <input type={type || "text"} value={form[k]} onChange={handleChange}
+          placeholder={placeholder} style={inputStyle(errors[k])}
+          autoComplete="off" autoCorrect="off" autoCapitalize="sentences" spellCheck="false" />
+      )}
+      {errors[k] && <div style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>{errors[k]}</div>}
+    </div>
+  );
+}
+
 function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
   const tl = t || T.en;
   const isMobile = useIsMobile();
@@ -498,31 +534,7 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
     onSubmit && onSubmit(candidate);
   }
 
-  const Field = ({ label, k, type = "text", placeholder, options, required, maxLen }) => (
-    <div style={{ marginBottom: 18 }}>
-      <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>
-        {label} {required && <span style={{ color: "#EF4444" }}>*</span>}
-      </label>
-      {options ? (
-        <select value={form[k]} onChange={e => set(k, e.target.value)} style={inputStyle(errors[k])}>
-          <option value="">Select...</option>
-          {options.map(o => <option key={o} value={o}>{o}</option>)}
-        </select>
-      ) : type === "textarea" ? (
-        <div style={{ position: "relative" }}>
-          <textarea value={form[k]} onChange={e => { if (!maxLen || e.target.value.length <= maxLen) set(k, e.target.value); }}
-            placeholder={placeholder} rows={4} style={{ ...inputStyle(errors[k]), resize: "vertical" }} />
-          {maxLen && <div style={{ position: "absolute", bottom: 8, right: 10, fontSize: 10, color: (form[k]||"").length > maxLen * 0.9 ? "#EF4444" : "#9CA3AF", fontWeight: 600 }}>
-            {(form[k]||"").length}/{maxLen}
-          </div>}
-        </div>
-      ) : (
-        <input type={type} value={form[k]} onChange={e => set(k, e.target.value)}
-          placeholder={placeholder} style={inputStyle(errors[k])} />
-      )}
-      {errors[k] && <div style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>{errors[k]}</div>}
-    </div>
-  );
+  const Field = (props) => <FormField {...props} form={form} onSet={set} errors={errors} />;
 
   if (submitted) return (
     <div style={{ textAlign: "center", padding: "48px 24px" }}>
