@@ -826,6 +826,190 @@ function PreScreen({ job, t, lang, onBack }) {
   );
 }
 
+
+const AREAS = ["All", "Finance & Accounting", "Technology", "Legal & Compliance", "Admin & Operations", "Sales & Marketing", "Other"];
+
+function JobsWithFilter({ jobs, onApply, t, onHome }) {
+  const [area, setArea] = useState("All");
+  const filtered = area === "All" ? jobs : jobs.filter(j => (j.area || "Other") === area);
+  const available = [...new Set(jobs.map(j => j.area || "Other"))];
+  return (
+    <div>
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+          <div style={{ width: 3, height: 16, background: P.blue, borderRadius: 99 }} />
+          <span style={{ color: P.textMuted, fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>
+            {t.jobsAvailable(filtered.length)}
+          </span>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {["All", ...available].map(a => (
+            <button key={a} onClick={() => setArea(a)} style={{
+              background: area === a ? P.navy : P.white,
+              color: area === a ? "#fff" : P.textMid,
+              border: "1.5px solid " + (area === a ? P.navy : P.border),
+              borderRadius: 99, padding: "6px 16px", fontSize: 12,
+              fontWeight: 700, cursor: "pointer", transition: "all 0.15s",
+            }}>
+              {a === "All" ? "All Areas" : a}
+            </button>
+          ))}
+        </div>
+      </div>
+      {filtered.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "48px 20px", color: P.textMuted }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
+          <div style={{ fontWeight: 700, color: P.navy }}>No openings in this area right now</div>
+        </div>
+      ) : (
+        filtered.map(job => <div key={job.id} style={{ marginBottom: 14 }}><JobCard job={job} onApply={onApply} t={t} onHome={onHome} /></div>)
+      )}
+    </div>
+  );
+}
+
+function HireMe({ onBack }) {
+  const isMobile = useIsMobile();
+  const cols = isMobile ? "1fr" : "1fr 1fr";
+  const [form, setForm] = useState({
+    contactName: "", title: "", company: "", email: "", phone: "",
+    website: "", companySize: "", industry: "", roleTitle: "", roleArea: "",
+    roleType: "", salary: "", timeline: "", location: "", languagesNeeded: "",
+    description: "", challenges: "", idealCandidate: "", howFound: "",
+  });
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  function validate() {
+    const e = {};
+    if (!form.contactName.trim()) e.contactName = "Required";
+    if (!form.company.trim()) e.company = "Required";
+    if (!form.email.trim() || !form.email.includes("@")) e.email = "Invalid email";
+    if (!form.roleTitle.trim()) e.roleTitle = "Required";
+    if (!form.description.trim()) e.description = "Required";
+    return e;
+  }
+
+  async function handleSubmit() {
+    const e = validate();
+    if (Object.keys(e).length) { setErrors(e); return; }
+    setLoading(true);
+    const lead = { id: generateId(), submittedAt: new Date().toISOString(), status: "new", ...form };
+    const existing = await loadCompanyLeads();
+    await saveCompanyLeads([lead, ...existing]);
+    await sendEmailNotification(EMAILJS_TEMPLATE_COMPANY, {
+      to_email: "amartinssoares3@gmail.com", to_name: "Allan",
+      contact_name: form.contactName, contact_email: form.email,
+      company_name: form.company, role_title: form.roleTitle,
+      role_area: form.roleArea || "—", submitted_at: new Date().toLocaleString("en-US"),
+    });
+    setSubmitted(true);
+    setLoading(false);
+  }
+
+  const Field = ({ label, k, type, placeholder, options, required }) => (
+    <div style={{ marginBottom: 18 }}>
+      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: P.textMuted, marginBottom: 6, letterSpacing: 0.3 }}>
+        {label} {required && <span style={{ color: "#DC2626" }}>*</span>}
+      </label>
+      {options ? (
+        <select value={form[k]} onChange={e => set(k, e.target.value)} style={inputStyle(errors[k])}>
+          <option value="">Select...</option>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : type === "textarea" ? (
+        <textarea value={form[k]} onChange={e => set(k, e.target.value)} placeholder={placeholder} rows={4} style={{ ...inputStyle(errors[k]), resize: "vertical" }} />
+      ) : (
+        <input type={type || "text"} value={form[k]} onChange={e => set(k, e.target.value)} placeholder={placeholder} style={inputStyle(errors[k])} />
+      )}
+      {errors[k] && <div style={{ color: "#DC2626", fontSize: 11, marginTop: 4 }}>{errors[k]}</div>}
+    </div>
+  );
+
+  if (submitted) return (
+    <div style={{ minHeight: "100vh", background: P.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ textAlign: "center", maxWidth: 440, background: P.surface, border: "1px solid " + P.border, borderRadius: 24, padding: "56px 40px", boxShadow: "0 4px 24px rgba(15,32,68,0.08)" }}>
+        <div style={{ fontSize: 56, marginBottom: 16 }}>🤝</div>
+        <h2 style={{ fontSize: 26, fontWeight: 900, color: P.navy, marginBottom: 10 }}>Request received!</h2>
+        <p style={{ color: P.textMid, fontSize: 14, lineHeight: 1.75, marginBottom: 32 }}>
+          Asoares will review your request and get back to you within <strong style={{ color: P.navy }}>24–48 hours</strong> at <strong style={{ color: P.blue }}>{form.email}</strong>.
+        </p>
+        <button onClick={onBack} style={{ background: P.navy, color: "#fff", border: "none", borderRadius: 10, padding: "12px 24px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>← Back to jobs board</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ minHeight: "100vh", background: P.bg }}>
+      <div style={{ background: P.navy, padding: isMobile ? "36px 16px 32px" : "52px 24px 44px", position: "relative", overflow: "hidden" }}>
+        <button onClick={onBack} style={{ position: "absolute", top: 20, left: 24, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.75)", borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>← Back</button>
+        <div style={{ maxWidth: 620, margin: "0 auto", textAlign: "center", paddingTop: 20 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(27,79,216,0.2)", border: "1px solid rgba(37,99,235,0.35)", borderRadius: 99, padding: "5px 14px", marginBottom: 20 }}>
+            <span style={{ color: "#93B4F7", fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase" }}>For Companies</span>
+          </div>
+          <h1 style={{ color: "#fff", fontSize: isMobile ? 26 : 38, fontWeight: 900, margin: "0 0 12px", letterSpacing: -1, lineHeight: 1.1 }}>
+            Hire <span style={{ background: "linear-gradient(90deg,#4F8EF7,#93B4F7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Asoares</span> International Staffing
+          </h1>
+          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, maxWidth: 480, margin: "0 auto", lineHeight: 1.75 }}>
+            Asoares International Staffing connects U.S. companies with high-quality, English-proficient Brazilian professionals.
+          </p>
+        </div>
+      </div>
+      <div style={{ maxWidth: 820, margin: "0 auto", padding: "32px 24px 48px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 12, marginBottom: 32 }}>
+          {[
+            { icon: "🇧🇷", title: "Brazil Expertise", desc: "Deep network in Brazil — a market most U.S. recruiters can't access." },
+            { icon: "🗣️", title: "Trilingual: EN/PT/ES", desc: "Candidates interviewed in their own language." },
+            { icon: "⚡", title: "Fast & Vetted", desc: "Pre-screened with verified English and U.S. market experience." },
+          ].map((v, i) => (
+            <div key={i} style={{ background: P.surface, border: "1px solid " + P.border, borderRadius: 14, padding: "20px 18px", boxShadow: "0 2px 8px rgba(15,32,68,0.05)" }}>
+              <div style={{ fontSize: 28, marginBottom: 10 }}>{v.icon}</div>
+              <div style={{ fontWeight: 800, fontSize: 14, color: P.navy, marginBottom: 6 }}>{v.title}</div>
+              <div style={{ color: P.textMuted, fontSize: 12, lineHeight: 1.65 }}>{v.desc}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background: P.surface, borderRadius: 20, padding: isMobile ? "24px 18px" : "36px", border: "1px solid " + P.border, boxShadow: "0 4px 20px rgba(15,32,68,0.06)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: cols, gap: "0 24px" }}>
+            <Field label="Your name" k="contactName" placeholder="Jane Smith" required />
+            <Field label="Your title" k="title" placeholder="CEO, HR Director..." />
+            <Field label="Email" k="email" type="email" placeholder="jane@company.com" required />
+            <Field label="Phone / WhatsApp" k="phone" placeholder="+1 555 000-0000" />
+            <Field label="Company name" k="company" placeholder="Acme Inc." required />
+            <Field label="Website" k="website" placeholder="https://yourcompany.com" />
+            <Field label="Industry" k="industry" placeholder="Accounting, Tech, Legal..." />
+            <Field label="Company size" k="companySize" options={["1–10 employees","11–50 employees","51–200 employees","201–500 employees","500+ employees"]} />
+            <Field label="Role title" k="roleTitle" placeholder="FP&A Analyst, Bookkeeper..." required />
+            <Field label="Role area" k="roleArea" options={["Finance & Accounting","Technology","Legal & Compliance","Admin & Operations","Sales & Marketing","HR & Recruiting","Other"]} />
+            <Field label="Contract type" k="roleType" options={["Full-time employee","Part-time","PJ / Independent contractor","Project-based","Not sure yet"]} />
+            <Field label="Budget (USD)" k="salary" placeholder="$2,000–$4,000/mo" />
+            <Field label="Timeline" k="timeline" options={["ASAP (within 2 weeks)","Within 1 month","1–3 months","Just exploring"]} />
+            <Field label="Languages needed" k="languagesNeeded" options={["English only","English + Portuguese","English + Spanish","English + PT + ES","Other"]} />
+          </div>
+          <Field label="Role description" k="description" type="textarea" required placeholder="Describe the role and responsibilities..." />
+          <Field label="Ideal candidate" k="idealCandidate" type="textarea" placeholder="What experience or background?" />
+          <Field label="Biggest hiring challenge" k="challenges" type="textarea" placeholder="E.g.: Struggled to find bilingual candidates..." />
+          <Field label="How did you hear about Asoares?" k="howFound" options={["LinkedIn","Referral","Facebook group","Google search","Other"]} />
+          <div style={{ background: "#EEF2FF", border: "1px solid #C7D7F5", borderRadius: 12, padding: "14px 18px", marginBottom: 24 }}>
+            <div style={{ fontSize: 13, color: P.textMid, lineHeight: 1.6 }}>
+              📩 <strong style={{ color: P.navy }}>What happens next:</strong> Asoares will review your request and reach out within <strong style={{ color: "#1B4FD8" }}>24–48 hours</strong>.
+            </div>
+          </div>
+          <button onClick={handleSubmit} disabled={loading} style={{
+            width: "100%", background: loading ? "#6B7A99" : "#1B4FD8",
+            color: "#fff", border: "none", borderRadius: 12, padding: "15px",
+            fontSize: 15, fontWeight: 800, cursor: loading ? "not-allowed" : "pointer",
+          }}>
+            {loading ? "Submitting..." : "Submit hiring request →"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════
 // PUBLIC — MAIN JOB BOARD
 // ══════════════════════════════════════════════════════════════
@@ -1030,6 +1214,344 @@ const btnRed = {
   background: "#FEF2F2", color: "#EF4444", border: "1.5px solid #FECACA",
   borderRadius: 10, padding: "10px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer",
 };
+
+
+// ══════════════════════════════════════════════════════════════
+// DASHBOARD — RECRUITER
+// ══════════════════════════════════════════════════════════════
+function Login({ onLogin }) {
+  const [pw, setPw] = useState("");
+  const [err, setErr] = useState(false);
+  function attempt() {
+    if (pw === "071415") { onLogin(); }
+    else { setErr(true); setTimeout(() => setErr(false), 2000); }
+  }
+  return (
+    <div style={{ minHeight: "100vh", background: "#0F172A", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ background: "#1E293B", borderRadius: 20, padding: "48px 40px", width: "100%", maxWidth: 380, boxShadow: "0 25px 50px rgba(0,0,0,0.5)" }}>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>🔐</div>
+          <h2 style={{ color: "#F8FAFC", fontSize: 22, fontWeight: 800, margin: 0 }}>Asoares Dashboard</h2>
+          <p style={{ color: "#94A3B8", fontSize: 13, marginTop: 6 }}>Asoares International Staffing</p>
+        </div>
+        <input type="password" value={pw} onChange={e => setPw(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && attempt()}
+          placeholder="Password" style={{
+            width: "100%", boxSizing: "border-box", background: "#0F172A",
+            border: "1px solid " + (err ? "#EF4444" : "#334155"),
+            borderRadius: 10, padding: "12px 16px", color: "#F8FAFC", fontSize: 15, marginBottom: 16, outline: "none"
+          }} />
+        {err && <div style={{ color: "#EF4444", fontSize: 13, marginBottom: 12, textAlign: "center" }}>Wrong password</div>}
+        <button onClick={attempt} style={{ width: "100%", background: "#2563EB", color: "#fff", border: "none", borderRadius: 10, padding: "13px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Login</button>
+      </div>
+    </div>
+  );
+}
+
+function CandidateModal({ candidate, jobs, onClose, onStatusChange, onDelete, onNotesSave }) {
+  const [notes, setNotes] = useState(candidate.notes || "");
+  const [notesSaved, setNotesSaved] = useState(false);
+  function handleSaveNotes() { onNotesSave(candidate.id, notes); setNotesSaved(true); setTimeout(() => setNotesSaved(false), 2000); }
+  const statusConfig = getStatusConfig(candidate.status);
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={onClose}>
+      <div style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 640, maxHeight: "90vh", overflowY: "auto", padding: "36px 40px", position: "relative" }} onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} style={{ position: "absolute", top: 20, right: 20, background: "#F1F5F9", border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", fontSize: 16 }}>✕</button>
+        <h2 style={{ fontSize: 24, fontWeight: 800, color: "#111827", margin: "0 0 4px" }}>{candidate.name}</h2>
+        <div style={{ color: "#6B7280", fontSize: 14, marginBottom: 20 }}>
+          {candidate.jobTitle} — {candidate.company} · Applied {formatDate(candidate.appliedAt)}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+          {[["Email", candidate.email],["WhatsApp", candidate.whatsapp],["LinkedIn", candidate.linkedin || "—"],["City", candidate.city || "—"],["English", candidate.english || "—"],["Availability", candidate.availability || "—"],["Salary", candidate.salary || "—"],["Software", candidate.software || "—"]].map(([l,v]) => (
+            <div key={l} style={{ background: "#F8FAFF", borderRadius: 10, padding: "10px 14px" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1 }}>{l}</div>
+              <div style={{ fontSize: 14, color: "#111827", fontWeight: 600, marginTop: 2 }}>{v}</div>
+            </div>
+          ))}
+        </div>
+        {candidate.experience && <div style={{ marginBottom: 12 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Experience</div><p style={{ color: "#374151", fontSize: 14, lineHeight: 1.7, margin: 0, background: "#F8FAFF", borderRadius: 10, padding: "12px 16px" }}>{candidate.experience}</p></div>}
+        {candidate.motivation && <div style={{ marginBottom: 12 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Motivation</div><p style={{ color: "#374151", fontSize: 14, lineHeight: 1.7, margin: 0, background: "#F8FAFF", borderRadius: 10, padding: "12px 16px" }}>{candidate.motivation}</p></div>}
+        {candidate.resume && <div style={{ marginBottom: 16 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Resume</div><a href={candidate.resume.base64} download={candidate.resume.name} style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "#EFF6FF", border: "1.5px solid #BFDBFE", borderRadius: 10, padding: "12px 18px", textDecoration: "none", color: "#1D4ED8", fontWeight: 700, fontSize: 14 }}>📄 {candidate.resume.name}</a></div>}
+        {candidate.linkedin && <div style={{ marginBottom: 16 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>LinkedIn</div><a href={candidate.linkedin.startsWith("http") ? candidate.linkedin : "https://" + candidate.linkedin} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#F0F9FF", border: "1.5px solid #BAE6FD", borderRadius: 10, padding: "10px 16px", textDecoration: "none", color: "#0369A1", fontWeight: 600, fontSize: 14 }}>💼 {candidate.linkedin}</a></div>}
+        <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: 20, marginBottom: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>📝 Notes</div>
+          <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Add notes about this candidate..." rows={4}
+            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #E5E7EB", borderRadius: 10, padding: "12px 14px", fontSize: 13, fontFamily: "inherit", resize: "vertical", outline: "none" }} />
+          <button onClick={handleSaveNotes} style={{ marginTop: 8, background: notesSaved ? "#10B981" : "#1E293B", color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "background 0.3s" }}>
+            {notesSaved ? "✓ Saved!" : "Save note"}
+          </button>
+        </div>
+        <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Status</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+            {STATUSES.map(s => (
+              <button key={s.key} onClick={() => onStatusChange(candidate.id, s.key)} style={{ padding: "7px 14px", borderRadius: 8, border: "2px solid " + s.color, background: candidate.status === s.key ? s.color : "transparent", color: candidate.status === s.key ? "#fff" : s.color, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{s.label}</button>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <a href={"mailto:" + candidate.email} style={{ background: "#2D6BE4", color: "#fff", border: "none", borderRadius: 10, padding: "10px 18px", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>Send email</a>
+            <a href={"https://wa.me/" + (candidate.whatsapp?.replace(/\D/g,""))} target="_blank" rel="noreferrer" style={{ background: "#10B981", color: "#fff", border: "none", borderRadius: 10, padding: "10px 18px", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>WhatsApp</a>
+            <button onClick={() => { onDelete(candidate.id); onClose(); }} style={{ background: "#FEF2F2", color: "#EF4444", border: "1.5px solid #FECACA", borderRadius: 10, padding: "10px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginLeft: "auto" }}>🗑 Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Dashboard({ onLogout }) {
+  const [candidates, setCandidates] = useState([]);
+  const [jobs, setJobs] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const [dashLoading, setDashLoading] = useState(true);
+  const [view, setView] = useState("candidates");
+  const [search, setSearch] = useState("");
+  const [filterJob, setFilterJob] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [selected, setSelected] = useState(null);
+  const [newJob, setNewJob] = useState({ title: "", company: "", description: "", location: "100% Remote (Brazil)", type: "PJ Contractor", pay: "USD", hours: "", english: "Advanced", area: "Finance & Accounting", requirements: "" });
+
+  useEffect(() => {
+    Promise.all([
+      loadCandidates().then(setCandidates),
+      loadJobs().then(setJobs),
+      loadCompanyLeads().then(setCompanies),
+    ]).finally(() => setDashLoading(false));
+  }, []);
+
+  async function updateStatus(id, status) {
+    const updated = candidates.map(c => c.id === id ? { ...c, status } : c);
+    setCandidates(updated);
+    await saveCandidates(updated);
+    if (selected?.id === id) setSelected(updated.find(c => c.id === id));
+  }
+
+  async function deleteCandidate(id) {
+    const updated = candidates.filter(c => c.id !== id);
+    setCandidates(updated);
+    await saveCandidates(updated);
+  }
+
+  async function saveNotes(id, notes) {
+    const updated = candidates.map(c => c.id === id ? { ...c, notes } : c);
+    setCandidates(updated);
+    await saveCandidates(updated);
+    if (selected?.id === id) setSelected(updated.find(c => c.id === id));
+  }
+
+  async function addJob() {
+    const jobEntry = { id: generateId(), active: true, requirements: newJob.requirements.split("\n").filter(Boolean), area: newJob.area, ...newJob };
+    const updated = [jobEntry, ...jobs];
+    setJobs(updated);
+    await saveJobs(updated);
+    setView("jobs");
+    setNewJob({ title: "", company: "", description: "", location: "100% Remote (Brazil)", type: "PJ Contractor", pay: "USD", hours: "", english: "Advanced", area: "Finance & Accounting", requirements: "" });
+  }
+
+  async function toggleJob(id) {
+    const updated = jobs.map(j => j.id === id ? { ...j, active: !j.active } : j);
+    setJobs(updated);
+    await saveJobs(updated);
+  }
+
+  function exportCSV() {
+    const rows = [
+      ["Name","Email","WhatsApp","LinkedIn","City","English","Job Title","Company","Status","Applied","Salary","Software","Availability","Notes"],
+      ...filtered.map(c => [c.name,c.email,c.whatsapp,c.linkedin||"",c.city||"",c.english||"",c.jobTitle,c.company,getStatusConfig(c.status).label,formatDate(c.appliedAt),c.salary||"",c.software||"",c.availability||"",(c.notes||"").replace(/\n/g," ")])
+    ];
+    const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "asoares-candidates-" + new Date().toISOString().slice(0,10) + ".csv"; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  const filtered = candidates.filter(c => {
+    const matchSearch = !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.email.toLowerCase().includes(search.toLowerCase());
+    const matchJob = filterJob === "all" || c.jobId === filterJob;
+    const matchStatus = filterStatus === "all" || c.status === filterStatus;
+    return matchSearch && matchJob && matchStatus;
+  });
+
+  const stats = { total: candidates.length, new: candidates.filter(c => c.status === "new").length, approved: candidates.filter(c => c.status === "approved").length, submitted: candidates.filter(c => c.status === "submitted").length };
+
+  if (dashLoading) return (
+    <div style={{ minHeight: "100vh", background: "#F8FAFF", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}>
+      <div style={{ width: 40, height: 40, border: "3px solid #E2E6EE", borderTop: "3px solid #1B4FD8", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      <style>{"@keyframes spin{to{transform:rotate(360deg)}}"}</style>
+      <div style={{ fontSize: 14, color: "#6B7A99", fontWeight: 600 }}>Loading dashboard...</div>
+    </div>
+  );
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#F8FAFF", fontFamily: "inherit" }}>
+      <div style={{ background: "#0F172A", padding: "0 32px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          <span style={{ color: "#F8FAFC", fontWeight: 800, fontSize: 16 }}>Asoares <span style={{ color: "#60A5FA" }}>International Staffing</span></span>
+          {[["candidates","Candidates"],["jobs","Jobs"],["companies","Company Leads"]].map(([v,l]) => (
+            <button key={v} onClick={() => setView(v)} style={{ background: "none", border: "none", color: view === v ? "#60A5FA" : "#94A3B8", fontSize: 14, fontWeight: view === v ? 700 : 500, cursor: "pointer", padding: "0 4px", borderBottom: view === v ? "2px solid #60A5FA" : "2px solid transparent", paddingBottom: 2 }}>{l}</button>
+          ))}
+        </div>
+        <button onClick={onLogout} style={{ background: "none", border: "none", color: "#94A3B8", cursor: "pointer", fontSize: 13 }}>Logout</button>
+      </div>
+
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}>
+        {view === "candidates" && (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+              <div style={{ display: "flex", gap: 8 }}>
+                {[["Total",stats.total,"#2D6BE4"],["New",stats.new,"#F59E0B"],["Approved",stats.approved,"#10B981"],["Submitted",stats.submitted,"#06B6D4"]].map(([l,v,c]) => (
+                  <div key={l} style={{ background: "#fff", borderRadius: 10, padding: "10px 16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", textAlign: "center", minWidth: 64 }}>
+                    <div style={{ fontSize: 22, fontWeight: 900, color: c, lineHeight: 1 }}>{v}</div>
+                    <div style={{ fontSize: 10, color: "#9CA3AF", fontWeight: 700, marginTop: 2, textTransform: "uppercase" }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+              <button onClick={exportCSV} style={{ display: "flex", alignItems: "center", gap: 7, background: "#0F2044", color: "#fff", border: "none", borderRadius: 10, padding: "10px 18px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>⬇ Export CSV</button>
+            </div>
+            <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search candidate..." style={{ flex: 1, minWidth: 200, ...inputStyle() }} />
+              <select value={filterJob} onChange={e => setFilterJob(e.target.value)} style={{ ...inputStyle(), minWidth: 180 }}>
+                <option value="all">All jobs</option>
+                {jobs.map(j => <option key={j.id} value={j.id}>{j.title} — {j.company}</option>)}
+              </select>
+              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ ...inputStyle(), minWidth: 160 }}>
+                <option value="all">All statuses</option>
+                {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+              </select>
+            </div>
+            {filtered.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 20px", color: "#9CA3AF" }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>📭</div>
+                <div style={{ fontSize: 16, fontWeight: 600 }}>No candidates yet</div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {filtered.map(c => {
+                  const st = getStatusConfig(c.status);
+                  return (
+                    <div key={c.id} onClick={() => setSelected(c)} style={{ background: "#fff", borderRadius: 14, padding: "18px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", border: "1px solid #F0F0F0" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                        <div style={{ width: 44, height: 44, borderRadius: 12, background: st.color + "18", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, color: st.color }}>{c.name.charAt(0).toUpperCase()}</div>
+                        <div>
+                          <div style={{ fontWeight: 700, color: "#111827", fontSize: 15 }}>{c.name}</div>
+                          <div style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>{c.email} · {c.jobTitle} — {c.company}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ textAlign: "right" }}>
+                          <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", alignItems: "center" }}>
+                            <span style={{ background: st.color + "18", color: st.color, padding: "4px 12px", borderRadius: 99, fontSize: 11, fontWeight: 700 }}>{st.label}</span>
+                            {c.notes && <span style={{ background: "#FEF9C3", color: "#92400E", padding: "4px 8px", borderRadius: 99, fontSize: 11, fontWeight: 700 }}>📝</span>}
+                          </div>
+                          <div style={{ color: "#C4C9D4", fontSize: 11, marginTop: 4 }}>{formatDate(c.appliedAt)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+
+        {view === "jobs" && (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#111827", margin: 0 }}>Jobs</h2>
+              <button onClick={() => setView("addJob")} style={{ background: "#2D6BE4", color: "#fff", border: "none", borderRadius: 10, padding: "10px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>+ New Job</button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {jobs.map(j => (
+                <div key={j.id} style={{ background: "#fff", borderRadius: 14, padding: "20px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 16, color: "#111827" }}>{j.title}</div>
+                    <div style={{ color: "#9CA3AF", fontSize: 13, marginTop: 2 }}>{j.company} · {j.location}</div>
+                    <div style={{ color: "#6B7280", fontSize: 13, marginTop: 4 }}>{candidates.filter(c => c.jobId === j.id).length} candidate(s)</div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ background: j.active ? "#ECFDF5" : "#FEF2F2", color: j.active ? "#059669" : "#EF4444", padding: "4px 12px", borderRadius: 99, fontSize: 11, fontWeight: 700 }}>{j.active ? "● Active" : "● Inactive"}</span>
+                    <button onClick={() => toggleJob(j.id)} style={{ background: "transparent", color: "#2D6BE4", border: "1.5px solid #2D6BE4", borderRadius: 10, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>{j.active ? "Deactivate" : "Activate"}</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {view === "addJob" && (
+          <>
+            <button onClick={() => setView("jobs")} style={{ background: "none", border: "none", color: "#2D6BE4", cursor: "pointer", fontSize: 14, fontWeight: 600, marginBottom: 24, padding: 0 }}>← Back to jobs</button>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#111827", marginBottom: 24 }}>New Job</h2>
+            <div style={{ background: "#fff", borderRadius: 16, padding: "32px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
+                {[["Job title","title","e.g. FP&A Analyst"],["Company","company","e.g. Nimbl"],["Location","location","e.g. 100% Remote (Brazil)"],["Contract type","type","e.g. PJ Contractor"],["Pay","pay","e.g. USD"],["Hours","hours","e.g. Mountain Time overlap"],["English required","english","e.g. Advanced"],["Area","area","e.g. Finance & Accounting"]].map(([label,k,ph]) => (
+                  <div key={k} style={{ marginBottom: 18 }}>
+                    <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 6 }}>{label}</label>
+                    <input value={newJob[k]} onChange={e => setNewJob(j => ({ ...j, [k]: e.target.value }))} placeholder={ph} style={inputStyle()} />
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Description</label>
+                <textarea value={newJob.description} onChange={e => setNewJob(j => ({ ...j, description: e.target.value }))} rows={4} placeholder="Describe the job..." style={{ ...inputStyle(), resize: "vertical" }} />
+              </div>
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Requirements <span style={{ color: "#9CA3AF", fontWeight: 400 }}>(one per line)</span></label>
+                <textarea value={newJob.requirements} onChange={e => setNewJob(j => ({ ...j, requirements: e.target.value }))} rows={4} placeholder="QuickBooks experience&#10;Advanced English&#10;..." style={{ ...inputStyle(), resize: "vertical" }} />
+              </div>
+              <button onClick={addJob} style={{ background: "#2D6BE4", color: "#fff", border: "none", borderRadius: 10, padding: "10px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Create job →</button>
+            </div>
+          </>
+        )}
+
+        {view === "companies" && (
+          <>
+            <div style={{ marginBottom: 24 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#111827", margin: "0 0 4px" }}>Company Leads</h2>
+              <div style={{ fontSize: 13, color: "#9CA3AF" }}>{companies.length} request(s) received</div>
+            </div>
+            {companies.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 20px", color: "#9CA3AF" }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>🏢</div>
+                <div style={{ fontSize: 16, fontWeight: 600 }}>No company requests yet</div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {companies.map(c => (
+                  <div key={c.id} style={{ background: "#fff", borderRadius: 16, padding: "24px 28px", boxShadow: "0 1px 6px rgba(0,0,0,0.06)", border: "1px solid #F0F0F0" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                      <div>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: "#111827" }}>{c.company}</div>
+                        <div style={{ color: "#6B7280", fontSize: 13, marginTop: 2 }}>{c.contactName} · {c.email}</div>
+                      </div>
+                      <div style={{ fontSize: 11, color: "#C4C9D4" }}>{formatDate(c.submittedAt)}</div>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 16 }}>
+                      {[["Role",c.roleTitle],["Area",c.roleArea||"—"],["Budget",c.salary||"—"],["Timeline",c.timeline||"—"]].map(([l,v]) => (
+                        <div key={l} style={{ background: "#F8FAFF", borderRadius: 8, padding: "8px 12px" }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1 }}>{l}</div>
+                          <div style={{ fontSize: 12, color: "#111827", fontWeight: 600, marginTop: 2 }}>{v}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {c.description && <p style={{ color: "#374151", fontSize: 13, lineHeight: 1.7, margin: "0 0 12px", background: "#F8FAFF", borderRadius: 8, padding: "10px 14px" }}>{c.description}</p>}
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <a href={"mailto:" + c.email} style={{ background: "#2D6BE4", color: "#fff", border: "none", borderRadius: 10, padding: "9px 16px", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>Reply</a>
+                      {c.phone && <a href={"https://wa.me/" + c.phone.replace(/\D/g,"")} target="_blank" rel="noreferrer" style={{ background: "#10B981", color: "#fff", border: "none", borderRadius: 10, padding: "9px 16px", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>WhatsApp</a>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+      {selected && <CandidateModal candidate={selected} jobs={jobs} onClose={() => setSelected(null)} onStatusChange={updateStatus} onDelete={deleteCandidate} onNotesSave={saveNotes} />}
+    </div>
+  );
+}
 
 export default function App() {
   const [mode, setMode] = useState("public"); // public | login | dashboard
