@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 // ─── Mobile hook ───────────────────────────────────────────────────────────────
 function useIsMobile() {
@@ -461,15 +461,15 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
   const cols = isMobile ? "1fr" : "1fr 1fr";
 
   // All inputs use refs — no controlled state = no re-render = keyboard stays open
-  const nameRef = React.useRef();
-  const emailRef = React.useRef();
-  const whatsappRef = React.useRef();
-  const linkedinRef = React.useRef();
-  const cityRef = React.useRef();
-  const experienceRef = React.useRef();
-  const softwareRef = React.useRef();
-  const salaryRef = React.useRef();
-  const motivationRef = React.useRef();
+  const nameRef = useRef();
+  const emailRef = useRef();
+  const whatsappRef = useRef();
+  const linkedinRef = useRef();
+  const cityRef = useRef();
+  const experienceRef = useRef();
+  const softwareRef = useRef();
+  const salaryRef = useRef();
+  const motivationRef = useRef();
 
   // Selects need state (no ref alternative)
   const [english, setEnglish] = useState("");
