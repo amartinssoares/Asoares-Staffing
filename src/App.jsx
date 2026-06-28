@@ -407,35 +407,48 @@ function JobCard({ job, onApply, t, onHome }) {
   );
 }
 // ══════════════════════════════════════════════════════════════
-// STANDALONE FORM FIELD (prevents keyboard dismiss on mobile)
+// STANDALONE FORM FIELD - uncontrolled to prevent mobile keyboard dismiss
 // ══════════════════════════════════════════════════════════════
 function FormField({ label, k, type, placeholder, options, required, maxLen, form, onSet, errors }) {
-  const handleChange = (e) => {
-    const val = e.target.value;
-    if (!maxLen || val.length <= maxLen) onSet(k, val);
+  const ref = React.useRef(null);
+
+  // Sync ref value only on mount and when form resets (not on every keystroke)
+  React.useEffect(() => {
+    if (ref.current && ref.current.value !== form[k]) {
+      ref.current.value = form[k];
+    }
+  }, []); // only on mount
+
+  const handleBlur = (e) => {
+    onSet(k, e.target.value);
   };
+
+  const handleChange = (e) => {
+    if (maxLen && e.target.value.length > maxLen) {
+      e.target.value = e.target.value.slice(0, maxLen);
+    }
+    // Update parent state on every change (but since input is uncontrolled, no re-render)
+    onSet(k, e.target.value);
+  };
+
   return (
     <div style={{ marginBottom: 18 }}>
       <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>
         {label} {required && <span style={{ color: "#EF4444" }}>*</span>}
       </label>
       {options ? (
-        <select value={form[k]} onChange={handleChange} style={inputStyle(errors[k])}>
+        <select defaultValue={form[k]} onChange={handleChange} style={inputStyle(errors[k])}>
           <option value="">Select...</option>
           {options.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
       ) : type === "textarea" ? (
-        <div style={{ position: "relative" }}>
-          <textarea value={form[k]} onChange={handleChange}
-            placeholder={placeholder} rows={4} style={{ ...inputStyle(errors[k]), resize: "vertical" }} />
-          {maxLen && <div style={{ position: "absolute", bottom: 8, right: 10, fontSize: 10, color: (form[k]||"").length > maxLen * 0.9 ? "#EF4444" : "#9CA3AF", fontWeight: 600 }}>
-            {(form[k]||"").length}/{maxLen}
-          </div>}
-        </div>
+        <textarea ref={ref} defaultValue={form[k]} onChange={handleChange} onBlur={handleBlur}
+          placeholder={placeholder} rows={4} style={{ ...inputStyle(errors[k]), resize: "vertical" }} />
       ) : (
-        <input type={type || "text"} value={form[k]} onChange={handleChange}
+        <input ref={ref} type={type || "text"} defaultValue={form[k]}
+          onChange={handleChange} onBlur={handleBlur}
           placeholder={placeholder} style={inputStyle(errors[k])}
-          autoComplete="off" autoCorrect="off" autoCapitalize="sentences" spellCheck="false" />
+          autoComplete="off" autoCorrect="off" spellCheck="false" />
       )}
       {errors[k] && <div style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>{errors[k]}</div>}
     </div>
@@ -446,6 +459,12 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
   const tl = t || T.en;
   const isMobile = useIsMobile();
   const cols = isMobile ? "1fr" : "1fr 1fr";
+  // Use refs for all fields to avoid re-render on keystroke
+  const refs = {
+    name: React.useRef(), email: React.useRef(), whatsapp: React.useRef(),
+    linkedin: React.useRef(), city: React.useRef(), experience: React.useRef(),
+    software: React.useRef(), salary: React.useRef(), motivation: React.useRef(),
+  };
   const [form, setForm] = useState({
     name: "", email: "", whatsapp: "", linkedin: "",
     city: "", english: "", experience: "", software: "",
@@ -479,13 +498,30 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
     reader.readAsDataURL(file);
   }
 
+  function getVals() {
+    return {
+      name: refs.name.current?.value || "",
+      email: refs.email.current?.value || "",
+      whatsapp: refs.whatsapp.current?.value || "",
+      linkedin: refs.linkedin.current?.value || "",
+      city: refs.city.current?.value || "",
+      english: selectVals.english || "",
+      experience: refs.experience.current?.value || "",
+      software: refs.software.current?.value || "",
+      availability: selectVals.availability || "",
+      salary: refs.salary.current?.value || "",
+      motivation: refs.motivation.current?.value || "",
+    };
+  }
+
   function validate() {
+    const v = getVals();
     const e = {};
-    if (!form.name.trim()) e.name = tl.required;
-    if (!form.email.trim() || !form.email.includes("@")) e.email = tl.invalidEmail;
-    if (!form.whatsapp.trim()) e.whatsapp = tl.required;
-    if (!form.english) e.english = tl.selectLevel;
-    if (!form.experience.trim()) e.experience = tl.required;
+    if (!v.name.trim()) e.name = tl.required;
+    if (!v.email.trim() || !v.email.includes("@")) e.email = tl.invalidEmail;
+    if (!v.whatsapp.trim()) e.whatsapp = tl.required;
+    if (!v.english) e.english = tl.selectLevel;
+    if (!v.experience.trim()) e.experience = tl.required;
     return e;
   }
 
@@ -494,9 +530,11 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
     if (Object.keys(e).length) { setErrors(e); return; }
     setLoading(true);
 
+    const vals = getVals();
+
     // Duplicate check — same email + same job
     const existing = await loadCandidates();
-    const duplicate = existing.find(c => c.email.toLowerCase() === form.email.toLowerCase() && c.jobId === job.id);
+    const duplicate = existing.find(c => c.email.toLowerCase() === vals.email.toLowerCase() && c.jobId === job.id);
     if (duplicate) {
       setErrors({ email: tl.duplicateEmail || "You already applied for this position." });
       setLoading(false);
@@ -507,7 +545,7 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
       id: generateId(), jobId: job.id, jobTitle: job.title, company: job.company,
       appliedAt: new Date().toISOString(), status: "new",
       resume: resume ? { name: resume.name, base64: resume.base64, size: resume.size } : null,
-      ...form,
+      ...vals,
     };
     await saveCandidates([candidate, ...existing]);
     const appId = `AS-${candidate.id.toUpperCase().slice(0,6)}`;
@@ -534,7 +572,10 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
     onSubmit && onSubmit(candidate);
   }
 
-  const Field = (props) => <FormField {...props} form={form} onSet={set} errors={errors} />;
+  // Simple ref-based input — no re-render on type
+  const [errors, setErrors] = React.useState({});
+  const [selectVals, setSelectVals] = React.useState({ english: "", availability: "" });
+  const setSelect = (k, v) => setSelectVals(s => ({ ...s, [k]: v }));
 
   if (submitted) return (
     <div style={{ textAlign: "center", padding: "48px 24px" }}>
@@ -582,23 +623,55 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
         <h2 style={{ fontSize: 26, fontWeight: 800, color: "#0A1628", margin: 0 }}>{tl.applyTitle} {job.title}</h2>
       </div>
 
+      {/* Text inputs — uncontrolled (ref) to prevent re-render on keystroke */}
       <div style={{ display: "grid", gridTemplateColumns: cols, gap: "0 24px" }}>
-        <Field label={tl.fields.name} k="name" placeholder={tl.placeholders.name} required />
-        <Field label={tl.fields.email} k="email" type="email" placeholder={tl.placeholders.email} required />
-        <Field label={tl.fields.whatsapp} k="whatsapp" placeholder={tl.placeholders.whatsapp} required />
-        <Field label={tl.fields.city} k="city" placeholder={tl.placeholders.city} />
-        <Field label={tl.fields.english} k="english" required
-          options={tl.englishLevels} />
+        {[
+          { label: tl.fields.name, r: refs.name, ph: tl.placeholders.name, req: true, type: "text" },
+          { label: tl.fields.email, r: refs.email, ph: tl.placeholders.email, req: true, type: "email" },
+          { label: tl.fields.whatsapp, r: refs.whatsapp, ph: tl.placeholders.whatsapp, req: true, type: "tel" },
+          { label: tl.fields.city, r: refs.city, ph: tl.placeholders.city, req: false, type: "text" },
+          { label: tl.fields.software, r: refs.software, ph: tl.placeholders.software, req: false, type: "text" },
+          { label: tl.fields.salary, r: refs.salary, ph: tl.placeholders.salary, req: false, type: "text" },
+        ].map(({ label, r, ph, req, type }) => (
+          <div key={label} style={{ marginBottom: 18 }}>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>
+              {label} {req && <span style={{ color: "#EF4444" }}>*</span>}
+            </label>
+            <input ref={r} type={type} placeholder={ph} defaultValue="" style={inputStyle(errors[label])} />
+          </div>
+        ))}
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>
+            {tl.fields.english} <span style={{ color: "#EF4444" }}>*</span>
+          </label>
+          <select value={selectVals.english} onChange={e => setSelect("english", e.target.value)} style={inputStyle(errors.english)}>
+            <option value="">Select...</option>
+            {tl.englishLevels.map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
+          {errors.english && <div style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>{errors.english}</div>}
+        </div>
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>{tl.fields.availability}</label>
+          <select value={selectVals.availability} onChange={e => setSelect("availability", e.target.value)} style={inputStyle()}>
+            <option value="">Select...</option>
+            {tl.availOptions.map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
+        </div>
       </div>
 
-      <Field label={tl.fields.experience} k="experience"
-        type="textarea" placeholder={tl.placeholders.experience} required />
-      <Field label={tl.fields.software} k="software" placeholder={tl.placeholders.software} />
-      <Field label={tl.fields.availability} k="availability"
-        options={tl.availOptions} />
-      <Field label={tl.fields.salary} k="salary" placeholder={tl.placeholders.salary} />
-      <Field label={tl.fields.motivation} k="motivation" type="textarea"
-        placeholder={tl.placeholders.motivation} />
+      <div style={{ marginBottom: 18 }}>
+        <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>
+          {tl.fields.experience} <span style={{ color: "#EF4444" }}>*</span>
+        </label>
+        <textarea ref={refs.experience} placeholder={tl.placeholders.experience} rows={4}
+          defaultValue="" style={{ ...inputStyle(errors.experience), resize: "vertical" }} />
+        {errors.experience && <div style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>{errors.experience}</div>}
+      </div>
+      <div style={{ marginBottom: 18 }}>
+        <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>{tl.fields.motivation}</label>
+        <textarea ref={refs.motivation} placeholder={tl.placeholders.motivation} rows={4}
+          defaultValue="" style={{ ...inputStyle(), resize: "vertical" }} />
+      </div>
 
       {/* LinkedIn highlight */}
       <div style={{ background: "#F0F7FF", borderRadius: 12, padding: "14px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 12 }}>
