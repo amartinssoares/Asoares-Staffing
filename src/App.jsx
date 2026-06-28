@@ -459,80 +459,65 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
   const tl = t || T.en;
   const isMobile = useIsMobile();
   const cols = isMobile ? "1fr" : "1fr 1fr";
-  // Use refs for all fields to avoid re-render on keystroke
-  const refs = {
-    name: React.useRef(), email: React.useRef(), whatsapp: React.useRef(),
-    linkedin: React.useRef(), city: React.useRef(), experience: React.useRef(),
-    software: React.useRef(), salary: React.useRef(), motivation: React.useRef(),
-  };
-  const [form, setForm] = useState({
-    name: "", email: "", whatsapp: "", linkedin: "",
-    city: "", english: "", experience: "", software: "",
-    availability: "", salary: "", motivation: "",
-  });
-  const [resume, setResume] = useState(null); // { name, base64, size }
+
+  // All inputs use refs — no controlled state = no re-render = keyboard stays open
+  const nameRef = React.useRef();
+  const emailRef = React.useRef();
+  const whatsappRef = React.useRef();
+  const linkedinRef = React.useRef();
+  const cityRef = React.useRef();
+  const experienceRef = React.useRef();
+  const softwareRef = React.useRef();
+  const salaryRef = React.useRef();
+  const motivationRef = React.useRef();
+
+  // Selects need state (no ref alternative)
+  const [english, setEnglish] = useState("");
+  const [availability, setAvailability] = useState("");
+  const [resume, setResume] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [submittedId, setSubmittedId] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
   function handleResumeUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setErrors(err => ({ ...err, resume: "Arquivo muito grande. Máximo 5MB." }));
-      return;
-    }
-    const allowed = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
-    if (!allowed.includes(file.type)) {
-      setErrors(err => ({ ...err, resume: "Apenas PDF ou Word (.doc/.docx)" }));
-      return;
-    }
+    if (file.size > 5 * 1024 * 1024) { setErrors(err => ({ ...err, resume: "Max 5MB" })); return; }
+    const allowed = ["application/pdf","application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    if (!allowed.includes(file.type)) { setErrors(err => ({ ...err, resume: "PDF or Word only" })); return; }
     const reader = new FileReader();
-    reader.onload = () => {
-      setResume({ name: file.name, base64: reader.result, size: file.size });
-      setErrors(err => { const copy = { ...err }; delete copy.resume; return copy; });
-    };
+    reader.onload = () => { setResume({ name: file.name, base64: reader.result, size: file.size }); };
     reader.readAsDataURL(file);
   }
 
   function getVals() {
     return {
-      name: refs.name.current?.value || "",
-      email: refs.email.current?.value || "",
-      whatsapp: refs.whatsapp.current?.value || "",
-      linkedin: refs.linkedin.current?.value || "",
-      city: refs.city.current?.value || "",
-      english: selectVals.english || "",
-      experience: refs.experience.current?.value || "",
-      software: refs.software.current?.value || "",
-      availability: selectVals.availability || "",
-      salary: refs.salary.current?.value || "",
-      motivation: refs.motivation.current?.value || "",
+      name: nameRef.current?.value?.trim() || "",
+      email: emailRef.current?.value?.trim() || "",
+      whatsapp: whatsappRef.current?.value?.trim() || "",
+      linkedin: linkedinRef.current?.value?.trim() || "",
+      city: cityRef.current?.value?.trim() || "",
+      english,
+      experience: experienceRef.current?.value?.trim() || "",
+      software: softwareRef.current?.value?.trim() || "",
+      availability,
+      salary: salaryRef.current?.value?.trim() || "",
+      motivation: motivationRef.current?.value?.trim() || "",
     };
   }
 
-  function validate() {
-    const v = getVals();
-    const e = {};
-    if (!v.name.trim()) e.name = tl.required;
-    if (!v.email.trim() || !v.email.includes("@")) e.email = tl.invalidEmail;
-    if (!v.whatsapp.trim()) e.whatsapp = tl.required;
-    if (!v.english) e.english = tl.selectLevel;
-    if (!v.experience.trim()) e.experience = tl.required;
-    return e;
-  }
-
   async function handleSubmit() {
-    const e = validate();
-    if (Object.keys(e).length) { setErrors(e); return; }
-    setLoading(true);
-
     const vals = getVals();
+    const e = {};
+    if (!vals.name) e.name = tl.required;
+    if (!vals.email || !vals.email.includes("@")) e.email = tl.invalidEmail;
+    if (!vals.whatsapp) e.whatsapp = tl.required;
+    if (!vals.english) e.english = tl.selectLevel;
+    if (!vals.experience) e.experience = tl.required;
+    if (Object.keys(e).length) { setErrors(e); return; }
 
-    // Duplicate check — same email + same job
+    setLoading(true);
     const existing = await loadCandidates();
     const duplicate = existing.find(c => c.email.toLowerCase() === vals.email.toLowerCase() && c.jobId === job.id);
     if (duplicate) {
@@ -548,50 +533,31 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
       ...vals,
     };
     await saveCandidates([candidate, ...existing]);
-    const appId = `AS-${candidate.id.toUpperCase().slice(0,6)}`;
+    const appId = "AS-" + candidate.id.toUpperCase().slice(0,6);
     setSubmittedId(appId);
-
-    // Send email notification
-    await sendEmailNotification(EMAILJS_TEMPLATE_CANDIDATE, {
-      to_email: "amartinssoares3@gmail.com",
-      to_name: "Allan",
-      applicant_name: candidate.name,
-      applicant_email: candidate.email,
-      applicant_whatsapp: candidate.whatsapp,
-      applicant_linkedin: candidate.linkedin || "—",
-      applicant_english: candidate.english || "—",
-      applicant_city: candidate.city || "—",
-      job_title: candidate.jobTitle,
-      company: candidate.company,
-      application_id: appId,
-      applied_at: new Date().toLocaleString("en-US"),
-    });
-
     setSubmitted(true);
     setLoading(false);
     onSubmit && onSubmit(candidate);
   }
 
-  // Simple ref-based input — no re-render on type
-  const [selectVals, setSelectVals] = React.useState({ english: "", availability: "" });
-  const setSelect = (k, v) => setSelectVals(s => ({ ...s, [k]: v }));
+  const inp = (ref, type, ph, errKey) => (
+    <input ref={ref} type={type || "text"} placeholder={ph}
+      style={inputStyle(errKey ? errors[errKey] : null)}
+      autoComplete="off" spellCheck="false" />
+  );
 
   if (submitted) return (
     <div style={{ textAlign: "center", padding: "48px 24px" }}>
       <div style={{ width: 72, height: 72, borderRadius: "50%", background: "#EEF2FF", border: "2px solid #1B4FD8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, margin: "0 auto 20px" }}>🎉</div>
       <h2 style={{ fontSize: 26, fontWeight: 900, color: "#0A1628", marginBottom: 8 }}>{tl.successTitle}</h2>
-      <p style={{ color: "#2E3D5C", fontSize: 14, maxWidth: 400, margin: "0 auto 24px", lineHeight: 1.7 }}>
-        {tl.successMsg(job.title)}
-      </p>
-      {/* Protocol number */}
+      <p style={{ color: "#2E3D5C", fontSize: 14, maxWidth: 400, margin: "0 auto 24px", lineHeight: 1.7 }}>{tl.successMsg(job.title)}</p>
       <div style={{ background: "#F5F7FA", border: "1px solid #E2E6EE", borderRadius: 12, padding: "14px 20px", maxWidth: 320, margin: "0 auto 28px", display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ fontSize: 20 }}>🔖</div>
         <div style={{ textAlign: "left" }}>
           <div style={{ fontSize: 10, fontWeight: 800, color: "#6B7A99", textTransform: "uppercase", letterSpacing: 1 }}>Application ID</div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: "#0A1628", marginTop: 2, letterSpacing: 0.5 }}>{submittedId}</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#0A1628", marginTop: 2 }}>{submittedId}</div>
         </div>
       </div>
-      {/* Next steps */}
       <div style={{ background: "#EEF2FF", border: "1px solid #C7D7F5", borderRadius: 14, padding: "20px 24px", maxWidth: 400, margin: "0 auto 28px", textAlign: "left" }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: "#1B4FD8", textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>What happens next</div>
         {[
@@ -614,88 +580,88 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
 
   return (
     <div>
-      <button onClick={onBack} style={{ background: "none", border: "none", color: "#2D6BE4", cursor: "pointer", fontSize: 14, fontWeight: 600, marginBottom: 24, padding: 0 }}>
-        ← Voltar para vagas
-      </button>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "#1B4FD8", cursor: "pointer", fontSize: 14, fontWeight: 600, marginBottom: 24, padding: 0 }}>{tl.back}</button>
       <div style={{ marginBottom: 28 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: "#2D6BE4", textTransform: "uppercase", marginBottom: 4 }}>{job.company}</div>
+        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, color: "#1B4FD8", textTransform: "uppercase", marginBottom: 4 }}>{job.company}</div>
         <h2 style={{ fontSize: 26, fontWeight: 800, color: "#0A1628", margin: 0 }}>{tl.applyTitle} {job.title}</h2>
       </div>
 
-      {/* Text inputs — uncontrolled (ref) to prevent re-render on keystroke */}
       <div style={{ display: "grid", gridTemplateColumns: cols, gap: "0 24px" }}>
         {[
-          { label: tl.fields.name, r: refs.name, ph: tl.placeholders.name, req: true, type: "text" },
-          { label: tl.fields.email, r: refs.email, ph: tl.placeholders.email, req: true, type: "email" },
-          { label: tl.fields.whatsapp, r: refs.whatsapp, ph: tl.placeholders.whatsapp, req: true, type: "tel" },
-          { label: tl.fields.city, r: refs.city, ph: tl.placeholders.city, req: false, type: "text" },
-          { label: tl.fields.software, r: refs.software, ph: tl.placeholders.software, req: false, type: "text" },
-          { label: tl.fields.salary, r: refs.salary, ph: tl.placeholders.salary, req: false, type: "text" },
-        ].map(({ label, r, ph, req, type }) => (
+          { label: tl.fields.name, ref: nameRef, type: "text", ph: tl.placeholders.name, err: "name", req: true },
+          { label: tl.fields.email, ref: emailRef, type: "email", ph: tl.placeholders.email, err: "email", req: true },
+          { label: tl.fields.whatsapp, ref: whatsappRef, type: "tel", ph: tl.placeholders.whatsapp, err: "whatsapp", req: true },
+          { label: tl.fields.city, ref: cityRef, type: "text", ph: tl.placeholders.city, err: null, req: false },
+          { label: tl.fields.software, ref: softwareRef, type: "text", ph: tl.placeholders.software, err: null, req: false },
+          { label: tl.fields.salary, ref: salaryRef, type: "text", ph: tl.placeholders.salary, err: null, req: false },
+        ].map(({ label, ref, type, ph, err, req }) => (
           <div key={label} style={{ marginBottom: 18 }}>
             <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>
               {label} {req && <span style={{ color: "#EF4444" }}>*</span>}
             </label>
-            <input ref={r} type={type} placeholder={ph} defaultValue="" style={inputStyle(errors[label])} />
+            <input ref={ref} type={type} placeholder={ph} style={inputStyle(err ? errors[err] : null)} autoComplete="off" />
+            {err && errors[err] && <div style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>{errors[err]}</div>}
           </div>
         ))}
+
+        {/* English level */}
         <div style={{ marginBottom: 18 }}>
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>
             {tl.fields.english} <span style={{ color: "#EF4444" }}>*</span>
           </label>
-          <select value={selectVals.english} onChange={e => setSelect("english", e.target.value)} style={inputStyle(errors.english)}>
+          <select value={english} onChange={e => setEnglish(e.target.value)} style={inputStyle(errors.english)}>
             <option value="">Select...</option>
             {tl.englishLevels.map(o => <option key={o} value={o}>{o}</option>)}
           </select>
           {errors.english && <div style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>{errors.english}</div>}
         </div>
+
+        {/* Availability */}
         <div style={{ marginBottom: 18 }}>
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>{tl.fields.availability}</label>
-          <select value={selectVals.availability} onChange={e => setSelect("availability", e.target.value)} style={inputStyle()}>
+          <select value={availability} onChange={e => setAvailability(e.target.value)} style={inputStyle()}>
             <option value="">Select...</option>
             {tl.availOptions.map(o => <option key={o} value={o}>{o}</option>)}
           </select>
         </div>
       </div>
 
+      {/* Experience */}
       <div style={{ marginBottom: 18 }}>
         <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>
           {tl.fields.experience} <span style={{ color: "#EF4444" }}>*</span>
         </label>
-        <textarea ref={refs.experience} placeholder={tl.placeholders.experience} rows={4}
-          defaultValue="" style={{ ...inputStyle(errors.experience), resize: "vertical" }} />
+        <textarea ref={experienceRef} placeholder={tl.placeholders.experience} rows={4}
+          style={{ ...inputStyle(errors.experience), resize: "vertical" }} />
         {errors.experience && <div style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>{errors.experience}</div>}
       </div>
+
+      {/* Motivation */}
       <div style={{ marginBottom: 18 }}>
         <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>{tl.fields.motivation}</label>
-        <textarea ref={refs.motivation} placeholder={tl.placeholders.motivation} rows={4}
-          defaultValue="" style={{ ...inputStyle(), resize: "vertical" }} />
+        <textarea ref={motivationRef} placeholder={tl.placeholders.motivation} rows={4}
+          style={{ ...inputStyle(), resize: "vertical" }} />
       </div>
 
-      {/* LinkedIn highlight */}
-      <div style={{ background: "#F0F7FF", borderRadius: 12, padding: "14px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 12 }}>
+      {/* LinkedIn */}
+      <div style={{ background: "#EEF2FF", borderRadius: 12, padding: "14px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 12 }}>
         <span style={{ fontSize: 20 }}>💼</span>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#2D6BE4", marginBottom: 2 }}>{tl.fields.linkedin}</div>
-          <input
-            value={form.linkedin}
-            onChange={e => set("linkedin", e.target.value)}
-            placeholder={tl.placeholders.linkedin}
-            style={{ ...inputStyle(null), background: "#fff", marginBottom: 0 }}
-          />
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#1B4FD8", marginBottom: 2 }}>{tl.fields.linkedin}</div>
+          <input ref={linkedinRef} placeholder={tl.placeholders.linkedin}
+            style={{ ...inputStyle(null), background: "#fff", marginBottom: 0 }} autoComplete="off" />
         </div>
       </div>
 
       {/* Resume upload */}
       <div style={{ marginBottom: 24 }}>
-        <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 8 }}>
-          Currículo <span style={{ color: "#9CA3AF", fontWeight: 400 }}>(PDF ou Word — máx. 5MB)</span>
+        <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 8 }}>
+          {tl.fields.resume} <span style={{ color: "#9CA3AF", fontWeight: 400 }}>({tl.fields.resumeHint})</span>
         </label>
-        <label style={{
-          display: "flex", alignItems: "center", gap: 14, cursor: "pointer",
-          border: (errors.resume ? "2px dashed #EF4444" : resume ? "2px dashed #059669" : "2px dashed #BFCFFE"),
-          borderRadius: 12, padding: "20px 24px", background: resume ? "#F0FDF4" : "#F8FAFD",
-          transition: "all 0.2s"
+        <label style={{ display: "flex", alignItems: "center", gap: 14, cursor: "pointer",
+          border: "2px dashed " + (errors.resume ? "#DC2626" : resume ? "#16A34A" : "#C7D7F5"),
+          borderRadius: 12, padding: "20px 24px",
+          background: resume ? "#F0FDF4" : "#F8FAFF", transition: "all 0.2s"
         }}>
           <input type="file" accept=".pdf,.doc,.docx" onChange={handleResumeUpload} style={{ display: "none" }} />
           <span style={{ fontSize: 28 }}>{resume ? "✅" : "📄"}</span>
@@ -704,20 +670,21 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
               <>
                 <div style={{ fontWeight: 700, color: "#059669", fontSize: 14 }}>{resume.name}</div>
                 <div style={{ color: "#6B7280", fontSize: 12, marginTop: 2 }}>
-                  {(resume.size / 1024).toFixed(0)} KB · <span
-                    onClick={e => { e.preventDefault(); setResume(null); }}
-                    style={{ color: "#EF4444", cursor: "pointer", textDecoration: "underline" }}>Remover</span>
+                  {(resume.size / 1024).toFixed(0)} KB ·{" "}
+                  <span onClick={e => { e.preventDefault(); setResume(null); }} style={{ color: "#EF4444", cursor: "pointer", textDecoration: "underline" }}>
+                    {tl.fields.resumeRemove}
+                  </span>
                 </div>
               </>
             ) : (
               <>
-                <div style={{ fontWeight: 600, color: "#2D6BE4", fontSize: 14 }}>Clique para enviar seu currículo</div>
+                <div style={{ fontWeight: 600, color: "#1B4FD8", fontSize: 14 }}>{tl.fields.resumeClick}</div>
                 <div style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>{tl.fields.resumeFormats}</div>
               </>
             )}
           </div>
         </label>
-        {errors.resume && <div style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>{errors.resume}</div>}
+        {errors.resume && <div style={{ color: "#DC2626", fontSize: 12, marginTop: 4 }}>{errors.resume}</div>}
       </div>
 
       <button onClick={handleSubmit} disabled={loading} style={{
@@ -732,872 +699,6 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════
-// DASHBOARD — RECRUITER
-// ══════════════════════════════════════════════════════════════
-function Login({ onLogin }) {
-  const [pw, setPw] = useState("");
-  const [err, setErr] = useState(false);
-
-  function attempt() {
-    if (pw === "071415") { onLogin(); }
-    else { setErr(true); setTimeout(() => setErr(false), 2000); }
-  }
-
-  return (
-    <div style={{ minHeight: "100vh", background: "#0D1F3C", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ background: "#162236", borderRadius: 20, padding: "48px 40px", width: "100%", maxWidth: 380, boxShadow: "0 25px 50px rgba(0,0,0,0.5)" }}>
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>🔐</div>
-          <h2 style={{ color: "#F8FAFC", fontSize: 22, fontWeight: 800, margin: 0 }}>Asoares Dashboard</h2>
-          <p style={{ color: "#94A3B8", fontSize: 13, marginTop: 6 }}>Asoares International Staffing</p>
-        </div>
-        <input type="password" value={pw} onChange={e => setPw(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && attempt()}
-          placeholder="Senha" style={{
-            width: "100%", boxSizing: "border-box", background: "#0D1F3C", border: (err ? "1px solid #EF4444" : "1px solid #334155"),
-            borderRadius: 10, padding: "12px 16px", color: "#F8FAFC", fontSize: 15, marginBottom: 16, outline: "none"
-          }} />
-        {err && <div style={{ color: "#EF4444", fontSize: 13, marginBottom: 12, textAlign: "center" }}>Senha incorreta</div>}
-        <button onClick={attempt} style={{
-          width: "100%", background: "#2D6BE4", color: "#fff", border: "none",
-          borderRadius: 10, padding: "13px", fontSize: 15, fontWeight: 700, cursor: "pointer"
-        }}>Entrar</button>
-        
-      </div>
-    </div>
-  );
-}
-
-function CandidateModal({ candidate, jobs, onClose, onStatusChange, onDelete, onNotesSave }) {
-  const job = jobs.find(j => j.id === candidate.jobId);
-  // const status = getStatusConfig(candidate.status);
-  const [notes, setNotes] = useState(candidate.notes || "");
-  const [notesSaved, setNotesSaved] = useState(false);
-
-  function handleSaveNotes() {
-    onNotesSave(candidate.id, notes);
-    setNotesSaved(true);
-    setTimeout(() => setNotesSaved(false), 2000);
-  }
-
-  return (
-    <div style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1000,
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 24
-    }} onClick={onClose}>
-      <div style={{
-        background: "#fff", borderRadius: 20, width: "100%", maxWidth: 640,
-        maxHeight: "90vh", overflowY: "auto", padding: "36px 40px", position: "relative"
-      }} onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} style={{ position: "absolute", top: 20, right: 20, background: "#F1F5F9", border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Icon.X />
-        </button>
-
-        <div style={{ marginBottom: 24 }}>
-          <h2 style={{ fontSize: 24, fontWeight: 800, color: "#111827", margin: "0 0 4px" }}>{candidate.name}</h2>
-          <div style={{ color: "#6B7280", fontSize: 14 }}>
-            Vaga: <strong>{candidate.jobTitle}</strong> — {candidate.company} · Aplicou em {formatDate(candidate.appliedAt)}
-          </div>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
-          {[
-            ["Email", candidate.email],
-            ["WhatsApp", candidate.whatsapp],
-            ["LinkedIn", candidate.linkedin || "—"],
-            ["Cidade", candidate.city || "—"],
-            ["Inglês", candidate.english || "—"],
-            ["Disponibilidade", candidate.availability || "—"],
-            ["Pretensão", candidate.salary || "—"],
-            ["Softwares", candidate.software || "—"],
-          ].map(([label, val]) => (
-            <div key={label} style={{ background: "#F8FAFD", borderRadius: 10, padding: "10px 14px" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1 }}>{label}</div>
-              <div style={{ fontSize: 14, color: "#111827", fontWeight: 600, marginTop: 2 }}>{val}</div>
-            </div>
-          ))}
-        </div>
-
-        {candidate.experience && (
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Experiência</div>
-            <p style={{ color: "#374151", fontSize: 14, lineHeight: 1.7, margin: 0, background: "#F8FAFD", borderRadius: 10, padding: "12px 16px" }}>{candidate.experience}</p>
-          </div>
-        )}
-
-        {candidate.motivation && (
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Motivação</div>
-            <p style={{ color: "#374151", fontSize: 14, lineHeight: 1.7, margin: 0, background: "#F8FAFD", borderRadius: 10, padding: "12px 16px" }}>{candidate.motivation}</p>
-          </div>
-        )}
-
-        {/* Resume download */}
-        {candidate.resume && (
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Currículo</div>
-            <a
-              href={candidate.resume.base64}
-              download={candidate.resume.name}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 10,
-                background: "#F0F7FF", border: "1.5px solid #BFCFFE",
-                borderRadius: 10, padding: "12px 18px", textDecoration: "none",
-                color: "#2D6BE4", fontWeight: 700, fontSize: 14,
-                transition: "background 0.15s"
-              }}
-            >
-              <span style={{ fontSize: 20 }}>📄</span>
-              <div>
-                <div>{candidate.resume.name}</div>
-                <div style={{ fontSize: 11, color: "#6B7280", fontWeight: 400, marginTop: 1 }}>
-                  {(candidate.resume.size / 1024).toFixed(0)} KB · Clique para baixar
-                </div>
-              </div>
-            </a>
-          </div>
-        )}
-
-        {/* LinkedIn link */}
-        {candidate.linkedin && (
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>LinkedIn</div>
-            <a
-              href={candidate.linkedin.startsWith("http") ? candidate.linkedin : `https://${candidate.linkedin}`}
-              target="_blank" rel="noreferrer"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                background: "#F0F9FF", border: "1.5px solid #BAE6FD",
-                borderRadius: 10, padding: "10px 16px", textDecoration: "none",
-                color: "#2D6BE4", fontWeight: 600, fontSize: 14,
-              }}
-            >
-              💼 {candidate.linkedin}
-            </a>
-          </div>
-        )}
-
-        {/* Notes section */}
-        <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: 20, marginTop: 4, marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
-            📝 Minhas notas
-          </div>
-          <textarea
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder={"Ex: Falei dia 15/06 — inglês excelente, aguardando CV atualizado...\nEx: Dave gostou, agendar 2ª entrevista semana que vem."}
-            rows={4}
-            style={{
-              width: "100%", boxSizing: "border-box", resize: "vertical",
-              border: "1.5px solid #E5E7EB", borderRadius: 10, padding: "12px 14px",
-              fontSize: 13, color: "#374151", lineHeight: 1.7, fontFamily: "inherit",
-              background: "#FAFAFA", outline: "none",
-            }}
-            onFocus={e => e.target.style.borderColor = "#2D6BE4"}
-            onBlur={e => e.target.style.borderColor = "#E5E7EB"}
-          />
-          <button onClick={handleSaveNotes} style={{
-            marginTop: 8, background: notesSaved ? "#059669" : "#162236",
-            color: "#fff", border: "none", borderRadius: 8,
-            padding: "8px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer",
-            transition: "background 0.3s", display: "flex", alignItems: "center", gap: 6
-          }}>
-            {notesSaved ? "✓ Salvo!" : "Salvar nota"}
-          </button>
-        </div>
-
-        <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Status do candidato</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {STATUSES.map(s => (
-              <button key={s.key} onClick={() => onStatusChange(candidate.id, s.key)} style={{
-                padding: "7px 14px", borderRadius: 8, border: ("2px solid " + s.color),
-                background: candidate.status === s.key ? s.color : "transparent",
-                color: candidate.status === s.key ? "#fff" : s.color,
-                fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "all 0.15s"
-              }}>{s.label}</button>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-          <a href={`mailto:${candidate.email}`} style={{ ...btnPrimary, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}>
-            Enviar email
-          </a>
-          <a href={`https://wa.me/${candidate.whatsapp?.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" style={{ ...btnGreen, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}>
-            WhatsApp
-          </a>
-          <button onClick={() => { onDelete(candidate.id); onClose(); }} style={{ ...btnRed, marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
-            <Icon.Trash /> Remover
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Dashboard({ onLogout }) {
-  const [candidates, setCandidates] = useState([]);
-  const [jobs, setJobs] = useState([]);
-  const [view, setView] = useState("candidates"); // candidates | jobs | addJob | companies
-  const [search, setSearch] = useState("");
-  const [filterJob, setFilterJob] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [selected, setSelected] = useState(null);
-  const [newJob, setNewJob] = useState({ title: "", company: "", description: "", location: "100% Remote (Brazil)", type: "PJ Contractor", pay: "USD", hours: "", english: "Avançado", area: "Finance & Accounting", requirements: "" });
-  const [companies, setCompanies] = useState([]);
-  const [dashLoading, setDashLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      loadCandidates().then(setCandidates),
-      loadJobs().then(setJobs),
-      loadCompanyLeads().then(setCompanies),
-    ]).finally(() => setDashLoading(false));
-  }, []);
-
-  async function updateStatus(id, status) {
-    const updated = candidates.map(c => c.id === id ? { ...c, status } : c);
-    setCandidates(updated);
-    await saveCandidates(updated);
-    if (selected?.id === id) setSelected(updated.find(c => c.id === id));
-  }
-
-  async function deleteCandidate(id) {
-    const updated = candidates.filter(c => c.id !== id);
-    setCandidates(updated);
-    await saveCandidates(updated);
-  }
-
-  async function saveNotes(id, notes) {
-    const updated = candidates.map(c => c.id === id ? { ...c, notes } : c);
-    setCandidates(updated);
-    await saveCandidates(updated);
-    if (selected?.id === id) setSelected(updated.find(c => c.id === id));
-  }
-
-  function exportCSV() {
-    const rows = [
-      ["Name","Email","WhatsApp","LinkedIn","City","English","Job Title","Company","Status","Applied","Salary","Software","Availability","Notes"],
-      ...filtered.map(c => [
-        c.name, c.email, c.whatsapp, c.linkedin || "",
-        c.city || "", c.english || "", c.jobTitle, c.company,
-        getStatusConfig(c.status).label,
-        formatDate(c.appliedAt),
-        c.salary || "", c.software || "", c.availability || "",
-        (c.notes || "").replace(/\n/g," ")
-      ])
-    ];
-    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `asoares-candidates-${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  async function addJob() {
-    const jobEntry = {
-      id: generateId(), active: true,
-      requirements: newJob.requirements.split("\n").filter(Boolean),
-      area: newJob.area,
-      ...newJob,
-    };
-    const updated = [jobEntry, ...jobs];
-    setJobs(updated);
-    await saveJobs(updated);
-    setView("jobs");
-    setNewJob({ title: "", company: "", description: "", location: "100% Remote (Brazil)", type: "PJ Contractor", pay: "USD", hours: "", english: "Avançado", requirements: "" });
-  }
-
-  async function toggleJob(id) {
-    const updated = jobs.map(j => j.id === id ? { ...j, active: !j.active } : j);
-    setJobs(updated);
-    await saveJobs(updated);
-  }
-
-  const filtered = candidates.filter(c => {
-    const matchSearch = !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.email.toLowerCase().includes(search.toLowerCase());
-    const matchJob = filterJob === "all" || c.jobId === filterJob;
-    const matchStatus = filterStatus === "all" || c.status === filterStatus;
-    return matchSearch && matchJob && matchStatus;
-  });
-
-  const stats = {
-    total: candidates.length,
-    new: candidates.filter(c => c.status === "new").length,
-    approved: candidates.filter(c => c.status === "approved").length,
-    submitted: candidates.filter(c => c.status === "submitted").length,
-  };
-
-  return (
-    <div style={{ minHeight: "100vh", background: "#F8FAFD", fontFamily: "inherit" }}>
-      {/* Topbar */}
-      <div style={{ background: "#0D1F3C", padding: "0 32px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-          <span style={{ color: "#F8FAFC", fontWeight: 800, fontSize: 16, letterSpacing: -0.5 }}>Asoares <span style={{ color: "#60A5FA" }}>International Staffing</span></span>
-          {[["candidates", "Candidatos"], ["jobs", "Vagas"], ["companies", "Company Leads"]].map(([v, l]) => (
-            <button key={v} onClick={() => setView(v)} style={{
-              background: "none", border: "none", color: view === v ? "#60A5FA" : "#94A3B8",
-              fontSize: 14, fontWeight: view === v ? 700 : 500, cursor: "pointer", padding: "0 4px",
-              borderBottom: view === v ? "2px solid #60A5FA" : "2px solid transparent", paddingBottom: 2
-            }}>{l}</button>
-          ))}
-        </div>
-        <button onClick={onLogout} style={{ background: "none", border: "none", color: "#94A3B8", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-          <Icon.LogOut /> Sair
-        </button>
-      </div>
-
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}>
-
-        {/* CANDIDATES VIEW */}
-        {view === "candidates" && (
-          <>
-            {/* Stats + Export row */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
-              <div style={{ display: "flex", gap: 8 }}>
-                {[
-                  { label: "Total", value: stats.total, color: "#2D6BE4" },
-                  { label: "New", value: stats.new, color: "#F59E0B" },
-                  { label: "Approved", value: stats.approved, color: "#10B981" },
-                  { label: "Submitted", value: stats.submitted, color: "#06B6D4" },
-                ].map(s => (
-                  <div key={s.label} style={{ background: "#fff", borderRadius: 10, padding: "10px 16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", textAlign: "center", minWidth: 64 }}>
-                    <div style={{ fontSize: 22, fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.value}</div>
-                    <div style={{ fontSize: 10, color: "#9CA3AF", fontWeight: 700, marginTop: 2, textTransform: "uppercase", letterSpacing: 0.5 }}>{s.label}</div>
-                  </div>
-                ))}
-              </div>
-              <button onClick={exportCSV} style={{ display: "flex", alignItems: "center", gap: 7, background: "#0F2044", color: "#fff", border: "none", borderRadius: 10, padding: "10px 18px", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 8px rgba(15,32,68,0.2)" }}>
-                ⬇ Export CSV
-              </button>
-            </div>
-
-            {/* Filters */}
-            <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
-              <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
-                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }}><Icon.Search /></span>
-                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar candidato..."
-                  style={{ width: "100%", boxSizing: "border-box", paddingLeft: 36, ...inputStyle() }} />
-              </div>
-              <select value={filterJob} onChange={e => setFilterJob(e.target.value)} style={{ ...inputStyle(), minWidth: 180 }}>
-                <option value="all">Todas as vagas</option>
-                {jobs.map(j => <option key={j.id} value={j.id}>{j.title} — {j.company}</option>)}
-              </select>
-              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ ...inputStyle(), minWidth: 160 }}>
-                <option value="all">Todos os status</option>
-                {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
-              </select>
-            </div>
-
-            {/* Candidates list */}
-            {filtered.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 20px", color: "#9CA3AF" }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>📭</div>
-                <div style={{ fontSize: 16, fontWeight: 600 }}>Nenhum candidato ainda</div>
-                <div style={{ fontSize: 13, marginTop: 4 }}>Quando alguém aplicar, vai aparecer aqui.</div>
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {filtered.map(c => {
-                  const st = getStatusConfig(c.status);
-                  return (
-                    <div key={c.id} style={{
-                      background: "#fff", borderRadius: 14, padding: "18px 24px",
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.06)", cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "space-between",
-                      border: "1px solid #F0F0F0", transition: "all 0.15s"
-                    }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = "#BFCFFE"}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = "#F0F0F0"}
-                      onClick={() => setSelected(c)}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                        <div style={{
-                          width: 44, height: 44, borderRadius: 12, background: `${st.color}22`,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 18, fontWeight: 800, color: st.color
-                        }}>
-                          {c.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 700, color: "#111827", fontSize: 15 }}>{c.name}</div>
-                          <div style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
-                            {c.email} · {c.jobTitle} — {c.company}
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                        <div style={{ textAlign: "right" }}>
-                          <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", alignItems: "center" }}>
-                            <span style={{
-                              background: `${st.color}22`, color: st.color,
-                              padding: "4px 12px", borderRadius: 99, fontSize: 11, fontWeight: 700
-                            }}>{st.label}</span>
-                            {c.notes && (
-                              <span title={c.notes} style={{
-                                background: "#FEF9C3", color: "#92400E",
-                                padding: "4px 8px", borderRadius: 99, fontSize: 11, fontWeight: 700
-                              }}>📝</span>
-                            )}
-                          </div>
-                          <div style={{ color: "#C4C9D4", fontSize: 11, marginTop: 4 }}>{formatDate(c.appliedAt)}</div>
-                        </div>
-                        <span style={{ color: "#D1D5DB" }}><Icon.ChevronRight /></span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
-
-        {/* JOBS VIEW */}
-        {view === "jobs" && (
-          <>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#111827", margin: 0 }}>Vagas</h2>
-              <button onClick={() => setView("addJob")} style={{ ...btnPrimary, display: "flex", alignItems: "center", gap: 6 }}>
-                <Icon.Plus /> Nova vaga
-              </button>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {jobs.map(j => (
-                <div key={j.id} style={{ background: "#fff", borderRadius: 14, padding: "20px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <div style={{ fontWeight: 800, fontSize: 16, color: "#111827" }}>{j.title}</div>
-                    <div style={{ color: "#9CA3AF", fontSize: 13, marginTop: 2 }}>{j.company} · {j.location}</div>
-                    <div style={{ color: "#6B7280", fontSize: 13, marginTop: 4 }}>
-                      {candidates.filter(c => c.jobId === j.id).length} candidato(s)
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <span style={{
-                      background: j.active ? "#ECFDF5" : "#FEF2F2",
-                      color: j.active ? "#059669" : "#EF4444",
-                      padding: "4px 12px", borderRadius: 99, fontSize: 11, fontWeight: 700
-                    }}>{j.active ? "● Ativa" : "● Inativa"}</span>
-                    <button onClick={() => toggleJob(j.id)} style={btnOutline}>
-                      {j.active ? "Desativar" : "Ativar"}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* COMPANY LEADS VIEW */}
-        {view === "companies" && (
-          <>
-            <div style={{ marginBottom: 24 }}>
-              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#111827", margin: "0 0 4px" }}>Company Leads</h2>
-              <div style={{ fontSize: 13, color: "#9CA3AF" }}>{companies.length} request{companies.length !== 1 ? "s" : ""} received</div>
-            </div>
-            {companies.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 20px", color: "#9CA3AF" }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>🏢</div>
-                <div style={{ fontSize: 16, fontWeight: 600 }}>No company requests yet</div>
-                <div style={{ fontSize: 13, marginTop: 4 }}>When a company fills out the hiring form, it'll appear here.</div>
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {companies.map(c => (
-                  <div key={c.id} style={{ background: "#fff", borderRadius: 16, padding: "24px 28px", boxShadow: "0 1px 6px rgba(0,0,0,0.06)", border: "1px solid #F0F0F0" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-                      <div>
-                        <div style={{ fontSize: 18, fontWeight: 800, color: "#111827" }}>{c.company}</div>
-                        <div style={{ color: "#6B7280", fontSize: 13, marginTop: 2 }}>{c.contactName} · {c.title || "—"} · {c.email}</div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <span style={{ background: "#F0F7FF", color: "#2D6BE4", padding: "4px 12px", borderRadius: 99, fontSize: 11, fontWeight: 700 }}>
-                          {c.roleType || "Role inquiry"}
-                        </span>
-                        <div style={{ color: "#C4C9D4", fontSize: 11, marginTop: 4 }}>{formatDate(c.submittedAt)}</div>
-                      </div>
-                    </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
-                      {[
-                        ["Role", c.roleTitle],
-                        ["Area", c.roleArea || "—"],
-                        ["Budget", c.salary || "—"],
-                        ["Timeline", c.timeline || "—"],
-                        ["Languages", c.languagesNeeded || "—"],
-                        ["Location", c.location || "—"],
-                        ["Company size", c.companySize || "—"],
-                        ["Industry", c.industry || "—"],
-                        ["How found", c.howFound || "—"],
-                      ].map(([label, val]) => (
-                        <div key={label} style={{ background: "#F8FAFD", borderRadius: 8, padding: "8px 12px" }}>
-                          <div style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1 }}>{label}</div>
-                          <div style={{ fontSize: 12, color: "#111827", fontWeight: 600, marginTop: 2 }}>{val}</div>
-                        </div>
-                      ))}
-                    </div>
-                    {c.description && (
-                      <div style={{ marginBottom: 10 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>Role Description</div>
-                        <p style={{ color: "#374151", fontSize: 13, lineHeight: 1.7, margin: 0, background: "#F8FAFD", borderRadius: 8, padding: "10px 14px" }}>{c.description}</p>
-                      </div>
-                    )}
-                    {c.idealCandidate && (
-                      <div style={{ marginBottom: 10 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>Ideal Candidate</div>
-                        <p style={{ color: "#374151", fontSize: 13, lineHeight: 1.7, margin: 0, background: "#F8FAFD", borderRadius: 8, padding: "10px 14px" }}>{c.idealCandidate}</p>
-                      </div>
-                    )}
-                    {c.challenges && (
-                      <div style={{ marginBottom: 16 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>Hiring Challenge</div>
-                        <p style={{ color: "#374151", fontSize: 13, lineHeight: 1.7, margin: 0, background: "#FEF9C3", borderRadius: 8, padding: "10px 14px" }}>{c.challenges}</p>
-                      </div>
-                    )}
-                    <div style={{ display: "flex", gap: 10 }}>
-                      <a href={`mailto:${c.email}`} style={{ ...btnPrimary, textDecoration: "none", fontSize: 13 }}>Reply via email</a>
-                      {c.phone && <a href={`https://wa.me/${c.phone.replace(/\D/g,"")}`} target="_blank" rel="noreferrer" style={{ ...btnGreen, textDecoration: "none", fontSize: 13 }}>WhatsApp</a>}
-                      {c.website && <a href={c.website} target="_blank" rel="noreferrer" style={{ ...btnOutline, textDecoration: "none", fontSize: 13 }}>Website</a>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        {/* ADD JOB VIEW */}
-        {view === "addJob" && (
-          <>
-            <button onClick={() => setView("jobs")} style={{ background: "none", border: "none", color: "#2D6BE4", cursor: "pointer", fontSize: 14, fontWeight: 600, marginBottom: 24, padding: 0 }}>
-              ← Voltar para vagas
-            </button>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#111827", marginBottom: 24 }}>Nova vaga</h2>
-            <div style={{ background: "#fff", borderRadius: 16, padding: "32px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
-                {[
-                  ["Título da vaga", "title", "Ex: FP&A Analyst"],
-                  ["Empresa", "company", "Ex: Nimbl"],
-                  ["Localização", "location", "Ex: 100% Remote (Brazil)"],
-                  ["Tipo de contrato", "type", "Ex: PJ Contractor"],
-                  ["Pagamento", "pay", "Ex: USD"],
-                  ["Horário", "hours", "Ex: Mountain Time overlap"],
-                  ["Inglês necessário", "english", "Ex: Avançado"],
-                  ["Área", "area", "Ex: Finance & Accounting"],
-                ].map(([label, k, ph]) => (
-                  <div key={k} style={{ marginBottom: 18 }}>
-                    <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 6 }}>{label}</label>
-                    <input value={newJob[k]} onChange={e => setNewJob(j => ({ ...j, [k]: e.target.value }))}
-                      placeholder={ph} style={inputStyle()} />
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginBottom: 18 }}>
-                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Descrição</label>
-                <textarea value={newJob.description} onChange={e => setNewJob(j => ({ ...j, description: e.target.value }))}
-                  rows={4} placeholder="Descreva a vaga..." style={{ ...inputStyle(), resize: "vertical" }} />
-              </div>
-              <div style={{ marginBottom: 24 }}>
-                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 6 }}>
-                  Requisitos <span style={{ color: "#9CA3AF", fontWeight: 400 }}>(um por linha)</span>
-                </label>
-                <textarea value={newJob.requirements} onChange={e => setNewJob(j => ({ ...j, requirements: e.target.value }))}
-                  rows={4} placeholder="Experiência com QuickBooks&#10;Inglês avançado&#10;..." style={{ ...inputStyle(), resize: "vertical" }} />
-              </div>
-              <button onClick={addJob} style={btnPrimary}>Criar vaga →</button>
-            </div>
-          </>
-        )}
-      </div>
-
-      {selected && (
-        <CandidateModal
-          candidate={selected} jobs={jobs}
-          onClose={() => setSelected(null)}
-          onStatusChange={updateStatus}
-          onDelete={deleteCandidate}
-          onNotesSave={saveNotes}
-        />
-      )}
-    </div>
-  );
-}
-
-
-// ══════════════════════════════════════════════════════════════
-// DESIGN TOKENS — Clean White + Deep Blue + Black
-// ══════════════════════════════════════════════════════════════
-const P = {
-  bg: "#FFFFFF",           // pure white page
-  surface: "#FFFFFF",      // cards
-  surfaceAlt: "#F5F7FA",   // subtle section bg
-  surfaceHover: "#EEF2FF", // card hover tint
-  navy: "#0A1628",         // near-black navy — headlines, navbar
-  blue: "#1B4FD8",         // primary blue — buttons, links
-  blueMid: "#2563EB",      // mid blue accent
-  blueLight: "#EEF2FF",    // blue tint bg
-  blueBorder: "#C7D7F5",   // blue-tinted border
-  black: "#0A0A0A",        // pure black for strong text
-  border: "#E2E6EE",       // card borders
-  borderStrong: "#C8CEDD",
-  text: "#0A1628",         // primary text
-  textMid: "#2E3D5C",      // body text
-  textMuted: "#6B7A99",    // muted text
-  white: "#FFFFFF",
-};
-
-// ══════════════════════════════════════════════════════════════
-// PUBLIC — HIRE ME (COMPANIES)
-// ══════════════════════════════════════════════════════════════
-function HireMe({ onBack }) {
-  const [form, setForm] = useState({
-    contactName: "", title: "", company: "", email: "", phone: "",
-    website: "", companySize: "", industry: "",
-    roleTitle: "", roleType: "", roleArea: "", salary: "", timeline: "",
-    location: "", languagesNeeded: "", description: "",
-    challenges: "", idealCandidate: "", howFound: "",
-  });
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
-  function validate() {
-    const e = {};
-    if (!form.contactName.trim()) e.contactName = "Required";
-    if (!form.company.trim()) e.company = "Required";
-    if (!form.email.trim() || !form.email.includes("@")) e.email = "Invalid email";
-    if (!form.roleTitle.trim()) e.roleTitle = "Required";
-    if (!form.description.trim()) e.description = "Required";
-    return e;
-  }
-
-  async function handleSubmit() {
-    const e = validate();
-    if (Object.keys(e).length) { setErrors(e); return; }
-    setLoading(true);
-    const lead = { id: generateId(), submittedAt: new Date().toISOString(), status: "new", ...form };
-    const existing = await loadCompanyLeads();
-    await saveCompanyLeads([lead, ...existing]);
-
-    // Send email notification
-    await sendEmailNotification(EMAILJS_TEMPLATE_COMPANY, {
-      to_email: "amartinssoares3@gmail.com",
-      to_name: "Allan",
-      contact_name: form.contactName,
-      contact_email: form.email,
-      contact_phone: form.phone || "—",
-      company_name: form.company,
-      company_website: form.website || "—",
-      company_size: form.companySize || "—",
-      industry: form.industry || "—",
-      role_title: form.roleTitle,
-      role_area: form.roleArea || "—",
-      role_type: form.roleType || "—",
-      salary: form.salary || "—",
-      timeline: form.timeline || "—",
-      languages: form.languagesNeeded || "—",
-      submitted_at: new Date().toLocaleString("en-US"),
-    });
-
-    setSubmitted(true);
-    setLoading(false);
-  }
-
-  const isMobile = useIsMobile();
-  const cols = isMobile ? "1fr" : "1fr 1fr";
-
-  const Field = ({ label, k, type = "text", placeholder, options, hint, required }) => (
-    <div style={{ marginBottom: 18 }}>
-      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: P.textMuted, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>
-        {label} {required && <span style={{ color: "#DC2626" }}>*</span>}
-        {hint && <span style={{ color: P.textMuted, fontWeight: 400, textTransform: "none" }}> — {hint}</span>}
-      </label>
-      {options ? (
-        <select value={form[k]} onChange={e => set(k, e.target.value)} style={inputStyle(errors[k])}>
-          <option value="">Select...</option>
-          {options.map(o => <option key={o} value={o}>{o}</option>)}
-        </select>
-      ) : type === "textarea" ? (
-        <textarea value={form[k]} onChange={e => set(k, e.target.value)} placeholder={placeholder} rows={4} style={{ ...inputStyle(errors[k]), resize: "vertical" }} />
-      ) : (
-        <input type={type} value={form[k]} onChange={e => set(k, e.target.value)} placeholder={placeholder} style={inputStyle(errors[k])} />
-      )}
-      {errors[k] && <div style={{ color: "#DC2626", fontSize: 11, marginTop: 4 }}>{errors[k]}</div>}
-    </div>
-  );
-
-  if (submitted) return (
-    <div style={{ minHeight: "100vh", background: P.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <div style={{ textAlign: "center", maxWidth: 440, background: P.surface, border: "1px solid #E2E6EE", borderRadius: 24, padding: "56px 40px", boxShadow: "0 4px 24px rgba(15,32,68,0.08)" }}>
-        <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#EEF2FF", border: "2px solid #1B4FD8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 20px" }}>🤝</div>
-        <h2 style={{ fontSize: 26, fontWeight: 900, color: P.navy, marginBottom: 10 }}>Request received!</h2>
-        <p style={{ color: P.textMid, fontSize: 14, lineHeight: 1.75, marginBottom: 32 }}>
-          Our team at Asoares will review your request and get back to you within <strong style={{ color: P.navy }}>24–48 hours</strong> at <strong style={{ color: P.blue }}>{form.email}</strong>.
-        </p>
-        <button onClick={onBack} style={{ background: P.navy, color: "#fff", border: "none", borderRadius: 10, padding: "12px 24px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>← Back to jobs board</button>
-      </div>
-    </div>
-  );
-
-  const Section = ({ icon, iconBg, title, sub, children }) => (
-    <div style={{ marginBottom: 32 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #E2E6EE" }}>
-        <div style={{ width: 38, height: 38, background: iconBg, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{icon}</div>
-        <div>
-          <div style={{ fontWeight: 800, fontSize: 15, color: P.navy }}>{title}</div>
-          <div style={{ fontSize: 12, color: P.textMuted, marginTop: 1 }}>{sub}</div>
-        </div>
-      </div>
-      {children}
-    </div>
-  );
-
-  return (
-    <div style={{ minHeight: "100vh", background: P.bg, fontFamily: "inherit" }}>
-      {/* Hero */}
-      <div style={{ background: P.navy, padding: isMobile ? "36px 16px 32px" : "52px 24px 44px", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", top: -60, right: -60, width: 300, height: 300, borderRadius: "50%", background: "rgba(27,79,216,0.10)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: -40, left: "20%", width: 200, height: 200, borderRadius: "50%", background: "rgba(27,79,216,0.06)", pointerEvents: "none" }} />
-        <button onClick={onBack} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.75)", borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", marginBottom: 28, display: "inline-flex", alignItems: "center", gap: 6 }}>← Back</button>
-        <div style={{ maxWidth: 620, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(27,79,216,0.2)", border: "1px solid rgba(37,99,235,0.35)", borderRadius: 99, padding: "5px 14px", marginBottom: 20 }}>
-            <span style={{ color: "#93B4F7", fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase" }}>For Companies</span>
-          </div>
-          <h1 style={{ color: "#fff", fontSize: isMobile ? 26 : 38, fontWeight: 900, margin: "0 0 12px", letterSpacing: isMobile ? -0.5 : -1.5, lineHeight: 1.1 }}>
-            Hire <span style={{ background: "linear-gradient(90deg,#4F8EF7,#93B4F7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Asoares</span> International Staffing
-          </h1>
-          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 15, maxWidth: 480, margin: "0 auto", lineHeight: 1.75 }}>
-            Asoares International Staffing connects U.S. companies with high-quality, English-proficient Brazilian professionals — paid in USD, working remotely on your schedule.
-          </p>
-        </div>
-      </div>
-
-      {/* Value props */}
-      <div style={{ maxWidth: 820, margin: "0 auto", padding: "36px 24px 0" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 36 }}>
-          {[
-            { icon: "🇧🇷", bg: "#EEF2FF", title: "Brazil Expertise", desc: "Deep network in Brazil — a market most U.S. recruiters can't access effectively." },
-            { icon: "🗣️", bg: "#EEF2FF", title: "Trilingual: EN/PT/ES", desc: "Candidates interviewed in their own language. No miscommunication, no lost talent." },
-            { icon: "⚡", bg: "#F0FDF4", title: "Fast & Vetted", desc: "Pre-screened candidates with verified English, U.S. market experience, and strong references." },
-          ].map((v, i) => (
-            <div key={i} style={{ background: P.surface, border: "1px solid #E2E6EE", borderRadius: 14, padding: "22px 18px", boxShadow: "0 2px 8px rgba(15,32,68,0.05)" }}>
-              <div style={{ width: 44, height: 44, background: v.bg, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, marginBottom: 12 }}>{v.icon}</div>
-              <div style={{ fontWeight: 800, fontSize: 14, color: P.navy, marginBottom: 6 }}>{v.title}</div>
-              <div style={{ color: P.textMuted, fontSize: 13, lineHeight: 1.65 }}>{v.desc}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Form */}
-        <div style={{ background: P.surface, borderRadius: 20, padding: "36px", border: "1px solid #E2E6EE", boxShadow: "0 4px 20px rgba(15,32,68,0.06)", marginBottom: 48 }}>
-          <Section icon="👤" iconBg="#EEF2FF" title="Your Contact Info" sub="Who should Allan reach out to?">
-            <div style={{ display: "grid", gridTemplateColumns: cols, gap: "0 24px" }}>
-              <Field label="Your name" k="contactName" placeholder="Jane Smith" required />
-              <Field label="Your title" k="title" placeholder="CEO, HR Director, Founder..." />
-              <Field label="Email" k="email" type="email" placeholder="jane@company.com" required />
-              <Field label="Phone / WhatsApp" k="phone" placeholder="+1 555 000-0000" />
-            </div>
-          </Section>
-
-          <Section icon="🏢" iconBg="#EEF2FF" title="About Your Company" sub="Help Allan understand your context">
-            <div style={{ display: "grid", gridTemplateColumns: cols, gap: "0 24px" }}>
-              <Field label="Company name" k="company" placeholder="Acme Inc." required />
-              <Field label="Website" k="website" placeholder="https://yourcompany.com" />
-              <Field label="Industry" k="industry" placeholder="Accounting, Tech, Legal, Finance..." />
-              <Field label="Company size" k="companySize" options={["1–10 employees","11–50 employees","51–200 employees","201–500 employees","500+ employees"]} />
-            </div>
-          </Section>
-
-          <Section icon="💼" iconBg="#F0FDF4" title="The Role" sub="Tell Allan exactly what you're looking for">
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
-              <Field label="Role title" k="roleTitle" placeholder="FP&A Analyst, Bookkeeper, Dev..." required />
-              <Field label="Contract type" k="roleType" options={["Full-time employee","Part-time","PJ / Independent contractor","Project-based","Not sure yet"]} />
-              <Field label="Budget / Salary range (USD)" k="salary" placeholder="$2,000–$4,000/mo" />
-              <Field label="Hiring timeline" k="timeline" options={["ASAP (within 2 weeks)","Within 1 month","1–3 months","Just exploring"]} />
-              <Field label="Work location" k="location" options={["100% Remote","Remote with overlap required","Hybrid","On-site"]} />
-              <Field label="Languages needed" k="languagesNeeded" options={["English only","English + Portuguese","English + Spanish","English + PT + ES","Other"]} />
-            </div>
-            <Field label="Role description" k="description" type="textarea" required placeholder="Describe the role, responsibilities, and what a typical day looks like..." />
-            <Field label="Ideal candidate profile" k="idealCandidate" type="textarea" placeholder="What experience or background does your ideal candidate have? Any deal-breakers?" />
-            <Field label="Biggest hiring challenge right now" k="challenges" type="textarea" placeholder="E.g.: We've struggled to find bilingual candidates, our last hire didn't work out..." />
-          </Section>
-
-          <div style={{ marginBottom: 24 }}>
-            <Field label="How did you hear about Allan?" k="howFound" options={["LinkedIn","Referral / Word of mouth","Facebook group","Google search","Other"]} />
-          </div>
-
-          <div style={{ background: "#EEF2FF", border: "1px solid #C7D7F5", borderRadius: 12, padding: "14px 18px", marginBottom: 24 }}>
-            <div style={{ fontSize: 13, color: P.textMid, lineHeight: 1.6 }}>
-              📩 <strong style={{ color: P.navy }}>What happens next:</strong> Asoares will review your request and reach out within <strong style={{ color: "#1B4FD8" }}>24–48 hours</strong> to schedule a discovery call.
-            </div>
-          </div>
-
-          <button onClick={handleSubmit} disabled={loading} style={{
-            width: "100%", background: loading ? "#6B7A99" : "#1B4FD8",
-            color: "#fff", border: "none", borderRadius: 12, padding: "15px",
-            fontSize: 15, fontWeight: 800, cursor: loading ? "not-allowed" : "pointer",
-            letterSpacing: 0.3, boxShadow: loading ? "none" : "0 4px 18px rgba(27,79,216,0.3)"
-          }}>
-            {loading ? "Submitting..." : "Submit hiring request →"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════
-// JOB FILTER + PRE-SCREEN
-// ══════════════════════════════════════════════════════════════
-
-
-
-function JobsWithFilter({ jobs, onApply, t, onHome }) {
-  const [area, setArea] = useState("All");
-  const filtered = area === "All" ? jobs : jobs.filter(j => (j.area || "Other") === area);
-  const available = [...new Set(jobs.map(j => j.area || "Other"))];
-
-  return (
-    <div>
-      {/* Area filter pills */}
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-          <div style={{ width: 3, height: 16, background: P.blue, borderRadius: 99 }} />
-          <span style={{ color: P.textMuted, fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>
-            {t.jobsAvailable(filtered.length)}
-          </span>
-        </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {["All", ...available].map(a => (
-            <button key={a} onClick={() => setArea(a)} style={{
-              background: area === a ? P.navy : P.white,
-              color: area === a ? "#fff" : P.textMid,
-              border: `1.5px solid ${area === a ? P.navy : P.border}`,
-              borderRadius: 99, padding: "6px 16px", fontSize: 12,
-              fontWeight: 700, cursor: "pointer", transition: "all 0.15s",
-            }}>
-              {a === "All" ? `All Areas` : a}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {filtered.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "48px 20px", color: P.textMuted }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
-          <div style={{ fontWeight: 700, color: P.navy }}>No openings in this area right now</div>
-          <div style={{ fontSize: 13, marginTop: 6 }}>Check back soon or explore other categories.</div>
-        </div>
-      ) : (
-        filtered.map(job => <div key={job.id} style={{ marginBottom: 14 }}><JobCard job={job} onApply={onApply} t={t} onHome={onHome} /></div>)
-      )}
-    </div>
-  );
-}
 
 function PreScreen({ job, t, lang, onBack }) {
   const isMobile = useIsMobile();
