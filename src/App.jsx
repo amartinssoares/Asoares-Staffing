@@ -33,6 +33,25 @@ function useIsMobile() {
   return isMobile;
 }
 
+// ─── Supabase Config ──────────────────────────────────────────────────────────
+const SUPABASE_URL = "https://dpbeqzshjpixnwqctoij.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwYmVxenNoanBpeG53cWN0b2lqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2MDA2NTEsImV4cCI6MjA5ODE3NjY1MX0._IKf47lOIDCMn4vjcV6OG4MvINgfMs74VHc8Y9RNLWI";
+
+async function sbFetch(table, method, body) {
+  const res = await fetch(SUPABASE_URL + "/rest/v1/" + table, {
+    method: method || "GET",
+    headers: {
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+      "Content-Type": "application/json",
+      "Prefer": method === "POST" ? "return=representation" : "",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) { console.error("Supabase error:", await res.text()); return null; }
+  return res.json();
+}
+
 // ─── EmailJS Notification ─────────────────────────────────────────────────────
 const EMAILJS_SERVICE_ID  = "YOUR_SERVICE_ID";   // replace after setup
 const EMAILJS_TEMPLATE_CANDIDATE = "YOUR_TEMPLATE_CANDIDATE_ID";
@@ -248,35 +267,53 @@ function generateId() {
 // ─── Storage ───────────────────────────────────────────────────────────────
 async function loadCandidates() {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    const data = await sbFetch("candidates?order=created_at.desc");
+    return Array.isArray(data) ? data.map(r => ({ ...r.data, id: r.id })) : [];
   } catch { return []; }
 }
 
 async function saveCandidates(candidates) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(candidates)); } catch {}
+  // Not used directly - individual saves via saveCandidate
+}
+
+async function saveCandidate(candidate) {
+  try {
+    await sbFetch("candidates", "POST", { id: candidate.id, data: candidate });
+  } catch(e) { console.error(e); }
 }
 
 async function loadCompanyLeads() {
   try {
-    const data = localStorage.getItem(COMPANIES_KEY);
-    return data ? JSON.parse(data) : [];
+    const data = await sbFetch("company_leads?order=created_at.desc");
+    return Array.isArray(data) ? data.map(r => ({ ...r.data, id: r.id })) : [];
   } catch { return []; }
 }
 
 async function saveCompanyLeads(leads) {
-  try { localStorage.setItem(COMPANIES_KEY, JSON.stringify(leads)); } catch {}
+  // Not used directly
+}
+
+async function saveCompanyLead(lead) {
+  try {
+    await sbFetch("company_leads", "POST", { id: lead.id, data: lead });
+  } catch(e) { console.error(e); }
 }
 
 async function loadJobs() {
   try {
-    const data = localStorage.getItem(JOBS_KEY);
-    return data ? JSON.parse(data) : DEFAULT_JOBS;
+    const data = await sbFetch("jobs?order=created_at.desc");
+    if (Array.isArray(data) && data.length > 0) {
+      return data.map(r => ({ ...r.data, id: r.id }));
+    }
+    return DEFAULT_JOBS;
   } catch { return DEFAULT_JOBS; }
 }
 
 async function saveJobs(jobs) {
-  try { localStorage.setItem(JOBS_KEY, JSON.stringify(jobs)); } catch {}
+  // Save each job individually
+  for (const job of jobs) {
+    try { await sbFetch("jobs", "POST", { id: job.id, data: job }); } catch {}
+  }
 }
 
 // ─── ICONS ────────────────────────────────────────────────────────────────
@@ -547,7 +584,7 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
       resume: resume ? { name: resume.name, base64: resume.base64, size: resume.size } : null,
       ...vals,
     };
-    await saveCandidates([candidate, ...existing]);
+    await saveCandidate(candidate);
     const appId = "AS-" + candidate.id.toUpperCase().slice(0,6);
     setSubmittedId(appId);
     setSubmitted(true);
@@ -912,8 +949,7 @@ function HireMe({ onBack }) {
     if (Object.keys(e).length) { setErrors(e); return; }
     setLoading(true);
     const lead = { id: generateId(), submittedAt: new Date().toISOString(), status: "new", ...form };
-    const existing = await loadCompanyLeads();
-    await saveCompanyLeads([lead, ...existing]);
+    await saveCompanyLead(lead);
     await sendEmailNotification(EMAILJS_TEMPLATE_COMPANY, {
       to_email: "amartinssoares3@gmail.com", to_name: "Allan",
       contact_name: form.contactName, contact_email: form.email,
@@ -1337,21 +1373,23 @@ function Dashboard({ onLogout }) {
   async function updateStatus(id, status) {
     const updated = candidates.map(c => c.id === id ? { ...c, status } : c);
     setCandidates(updated);
-    await saveCandidates(updated);
-    if (selected?.id === id) setSelected(updated.find(c => c.id === id));
+    const cand = updated.find(c => c.id === id);
+    if (cand) await saveCandidate(cand);
+    if (selected?.id === id) setSelected(cand);
   }
 
   async function deleteCandidate(id) {
     const updated = candidates.filter(c => c.id !== id);
     setCandidates(updated);
-    await saveCandidates(updated);
+    try { await sbFetch("candidates?id=eq." + id, "DELETE"); } catch {}
   }
 
   async function saveNotes(id, notes) {
     const updated = candidates.map(c => c.id === id ? { ...c, notes } : c);
     setCandidates(updated);
-    await saveCandidates(updated);
-    if (selected?.id === id) setSelected(updated.find(c => c.id === id));
+    const cand = updated.find(c => c.id === id);
+    if (cand) await saveCandidate(cand);
+    if (selected?.id === id) setSelected(cand);
   }
 
   async function addJob() {
