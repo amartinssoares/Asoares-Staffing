@@ -923,60 +923,91 @@ function JobsWithFilter({ jobs, onApply, t, onHome }) {
 function HireMe({ onBack }) {
   const isMobile = useIsMobile();
   const cols = isMobile ? "1fr" : "1fr 1fr";
-  const [form, setForm] = useState({
-    contactName: "", title: "", company: "", email: "", phone: "",
-    website: "", companySize: "", industry: "", roleTitle: "", roleArea: "",
-    roleType: "", salary: "", timeline: "", location: "", languagesNeeded: "",
-    description: "", challenges: "", idealCandidate: "", howFound: "",
-  });
+
+  // Text inputs via refs — prevents keyboard dismiss on mobile
+  const contactNameRef = useRef();
+  const titleRef = useRef();
+  const emailRef = useRef();
+  const phoneRef = useRef();
+  const companyRef = useRef();
+  const websiteRef = useRef();
+  const industryRef = useRef();
+  const roleTitleRef = useRef();
+  const salaryRef = useRef();
+  const descriptionRef = useRef();
+  const challengesRef = useRef();
+  const idealCandidateRef = useRef();
+
+  // Selects need state
+  const [companySizeVal, setCompanySizeVal] = useState("");
+  const [roleAreaVal, setRoleAreaVal] = useState("");
+  const [roleTypeVal, setRoleTypeVal] = useState("");
+  const [timelineVal, setTimelineVal] = useState("");
+  const [languagesVal, setLanguagesVal] = useState("");
+  const [howFoundVal, setHowFoundVal] = useState("");
+
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
-  function validate() {
-    const e = {};
-    if (!form.contactName.trim()) e.contactName = "Required";
-    if (!form.company.trim()) e.company = "Required";
-    if (!form.email.trim() || !form.email.includes("@")) e.email = "Invalid email";
-    if (!form.roleTitle.trim()) e.roleTitle = "Required";
-    if (!form.description.trim()) e.description = "Required";
-    return e;
+  function getVals() {
+    return {
+      contactName: contactNameRef.current?.value?.trim() || "",
+      title: titleRef.current?.value?.trim() || "",
+      email: emailRef.current?.value?.trim() || "",
+      phone: phoneRef.current?.value?.trim() || "",
+      company: companyRef.current?.value?.trim() || "",
+      website: websiteRef.current?.value?.trim() || "",
+      industry: industryRef.current?.value?.trim() || "",
+      companySize: companySizeVal,
+      roleTitle: roleTitleRef.current?.value?.trim() || "",
+      roleArea: roleAreaVal,
+      roleType: roleTypeVal,
+      salary: salaryRef.current?.value?.trim() || "",
+      timeline: timelineVal,
+      languagesNeeded: languagesVal,
+      description: descriptionRef.current?.value?.trim() || "",
+      challenges: challengesRef.current?.value?.trim() || "",
+      idealCandidate: idealCandidateRef.current?.value?.trim() || "",
+      howFound: howFoundVal,
+    };
   }
 
   async function handleSubmit() {
-    const e = validate();
+    const vals = getVals();
+    const e = {};
+    if (!vals.contactName) e.contactName = "Required";
+    if (!vals.company) e.company = "Required";
+    if (!vals.email || !vals.email.includes("@")) e.email = "Invalid email";
+    if (!vals.roleTitle) e.roleTitle = "Required";
+    if (!vals.description) e.description = "Required";
     if (Object.keys(e).length) { setErrors(e); return; }
+
     setLoading(true);
-    const lead = { id: generateId(), submittedAt: new Date().toISOString(), status: "new", ...form };
+    const lead = { id: generateId(), submittedAt: new Date().toISOString(), status: "new", ...vals };
     await saveCompanyLead(lead);
     await sendEmailNotification(EMAILJS_TEMPLATE_COMPANY, {
       to_email: "amartinssoares3@gmail.com", to_name: "Allan",
-      contact_name: form.contactName, contact_email: form.email,
-      company_name: form.company, role_title: form.roleTitle,
-      role_area: form.roleArea || "—", submitted_at: new Date().toLocaleString("en-US"),
+      contact_name: vals.contactName, contact_email: vals.email,
+      company_name: vals.company, role_title: vals.roleTitle,
+      role_area: vals.roleArea || "—", submitted_at: new Date().toLocaleString("en-US"),
     });
     setSubmitted(true);
     setLoading(false);
   }
 
-  const Field = ({ label, k, type, placeholder, options, required }) => (
-    <div style={{ marginBottom: 18 }}>
-      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: P.textMuted, marginBottom: 6, letterSpacing: 0.3 }}>
-        {label} {required && <span style={{ color: "#DC2626" }}>*</span>}
-      </label>
-      {options ? (
-        <select value={form[k]} onChange={e => set(k, e.target.value)} style={inputStyle(errors[k])}>
-          <option value="">Select...</option>
-          {options.map(o => <option key={o} value={o}>{o}</option>)}
-        </select>
-      ) : type === "textarea" ? (
-        <textarea value={form[k]} onChange={e => set(k, e.target.value)} placeholder={placeholder} rows={4} style={{ ...inputStyle(errors[k]), resize: "vertical" }} />
-      ) : (
-        <input type={type || "text"} value={form[k]} onChange={e => set(k, e.target.value)} placeholder={placeholder} style={inputStyle(errors[k])} />
-      )}
-      {errors[k] && <div style={{ color: "#DC2626", fontSize: 11, marginTop: 4 }}>{errors[k]}</div>}
-    </div>
+  const inp = (ref, type, ph, errKey) => (
+    <input ref={ref} type={type || "text"} placeholder={ph}
+      style={inputStyle(errKey ? errors[errKey] : null)}
+      autoComplete="off" />
+  );
+
+  const sel = (val, setVal, options, errKey) => (
+    <select value={val} onChange={e => setVal(e.target.value)}
+      style={inputStyle(errKey ? errors[errKey] : null)}>
+      <option value="">Select...</option>
+      {options.map(o => <option key={o} value={o}>{o}</option>)}
+    </select>
   );
 
   if (submitted) return (
@@ -985,7 +1016,7 @@ function HireMe({ onBack }) {
         <div style={{ fontSize: 56, marginBottom: 16 }}>🤝</div>
         <h2 style={{ fontSize: 26, fontWeight: 900, color: P.navy, marginBottom: 10 }}>Request received!</h2>
         <p style={{ color: P.textMid, fontSize: 14, lineHeight: 1.75, marginBottom: 32 }}>
-          Asoares will review your request and get back to you within <strong style={{ color: P.navy }}>24–48 hours</strong> at <strong style={{ color: P.blue }}>{form.email}</strong>.
+          Asoares will review your request and get back to you within <strong style={{ color: P.navy }}>24–48 hours</strong>.
         </p>
         <button onClick={onBack} style={{ background: P.navy, color: "#fff", border: "none", borderRadius: 10, padding: "12px 24px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>← Back to jobs board</button>
       </div>
@@ -997,57 +1028,85 @@ function HireMe({ onBack }) {
       <div style={{ background: P.navy, padding: isMobile ? "36px 16px 32px" : "52px 24px 44px", position: "relative", overflow: "hidden" }}>
         <button onClick={onBack} style={{ position: "absolute", top: 20, left: 24, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.75)", borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>← Back</button>
         <div style={{ maxWidth: 620, margin: "0 auto", textAlign: "center", paddingTop: 20 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(27,79,216,0.2)", border: "1px solid rgba(37,99,235,0.35)", borderRadius: 99, padding: "5px 14px", marginBottom: 20 }}>
-            <span style={{ color: "#93B4F7", fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase" }}>For Companies</span>
-          </div>
           <h1 style={{ color: "#fff", fontSize: isMobile ? 26 : 38, fontWeight: 900, margin: "0 0 12px", letterSpacing: -1, lineHeight: 1.1 }}>
-            Hire <span style={{ background: "linear-gradient(90deg,#4F8EF7,#93B4F7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Asoares</span> International Staffing
+            Hire <span style={{ background: "linear-gradient(90deg,#4F8EF7,#93B4F7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Brazilian Talent</span>
           </h1>
           <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, maxWidth: 480, margin: "0 auto", lineHeight: 1.75 }}>
             Asoares International Staffing connects U.S. companies with high-quality, English-proficient Brazilian professionals.
           </p>
         </div>
       </div>
+
       <div style={{ maxWidth: 820, margin: "0 auto", padding: "32px 24px 48px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 12, marginBottom: 32 }}>
-          {[
-            { icon: "🇧🇷", title: "Brazil Expertise", desc: "Deep network in Brazil — a market most U.S. recruiters can't access." },
-            { icon: "🗣️", title: "Trilingual: EN/PT/ES", desc: "Candidates interviewed in their own language." },
-            { icon: "⚡", title: "Fast & Vetted", desc: "Pre-screened with verified English and U.S. market experience." },
-          ].map((v, i) => (
-            <div key={i} style={{ background: P.surface, border: "1px solid " + P.border, borderRadius: 14, padding: "20px 18px", boxShadow: "0 2px 8px rgba(15,32,68,0.05)" }}>
-              <div style={{ fontSize: 28, marginBottom: 10 }}>{v.icon}</div>
-              <div style={{ fontWeight: 800, fontSize: 14, color: P.navy, marginBottom: 6 }}>{v.title}</div>
-              <div style={{ color: P.textMuted, fontSize: 12, lineHeight: 1.65 }}>{v.desc}</div>
-            </div>
-          ))}
-        </div>
         <div style={{ background: P.surface, borderRadius: 20, padding: isMobile ? "24px 18px" : "36px", border: "1px solid " + P.border, boxShadow: "0 4px 20px rgba(15,32,68,0.06)" }}>
           <div style={{ display: "grid", gridTemplateColumns: cols, gap: "0 24px" }}>
-            <Field label="Your name" k="contactName" placeholder="Jane Smith" required />
-            <Field label="Your title" k="title" placeholder="CEO, HR Director..." />
-            <Field label="Email" k="email" type="email" placeholder="jane@company.com" required />
-            <Field label="Phone / WhatsApp" k="phone" placeholder="+1 555 000-0000" />
-            <Field label="Company name" k="company" placeholder="Acme Inc." required />
-            <Field label="Website" k="website" placeholder="https://yourcompany.com" />
-            <Field label="Industry" k="industry" placeholder="Accounting, Tech, Legal..." />
-            <Field label="Company size" k="companySize" options={["1–10 employees","11–50 employees","51–200 employees","201–500 employees","500+ employees"]} />
-            <Field label="Role title" k="roleTitle" placeholder="FP&A Analyst, Bookkeeper..." required />
-            <Field label="Role area" k="roleArea" options={["Finance & Accounting","Technology","Legal & Compliance","Admin & Operations","Sales & Marketing","HR & Recruiting","Other"]} />
-            <Field label="Contract type" k="roleType" options={["Full-time employee","Part-time","PJ / Independent contractor","Project-based","Not sure yet"]} />
-            <Field label="Budget (USD)" k="salary" placeholder="$2,000–$4,000/mo" />
-            <Field label="Timeline" k="timeline" options={["ASAP (within 2 weeks)","Within 1 month","1–3 months","Just exploring"]} />
-            <Field label="Languages needed" k="languagesNeeded" options={["English only","English + Portuguese","English + Spanish","English + PT + ES","Other"]} />
+            {[
+              { label: "Your name", ref: contactNameRef, ph: "Jane Smith", err: "contactName", req: true },
+              { label: "Your title", ref: titleRef, ph: "CEO, HR Director...", err: null },
+              { label: "Email", ref: emailRef, ph: "jane@company.com", err: "email", req: true, type: "email" },
+              { label: "Phone / WhatsApp", ref: phoneRef, ph: "+1 555 000-0000", err: null, type: "tel" },
+              { label: "Company name", ref: companyRef, ph: "Acme Inc.", err: "company", req: true },
+              { label: "Website", ref: websiteRef, ph: "https://yourcompany.com", err: null },
+              { label: "Industry", ref: industryRef, ph: "Accounting, Tech, Legal...", err: null },
+              { label: "Role title", ref: roleTitleRef, ph: "FP&A Analyst, Bookkeeper...", err: "roleTitle", req: true },
+              { label: "Budget (USD)", ref: salaryRef, ph: "$2,000–$4,000/mo", err: null },
+            ].map(({ label, ref, ph, err, req, type }) => (
+              <div key={label} style={{ marginBottom: 18 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: P.textMuted, marginBottom: 6 }}>
+                  {label} {req && <span style={{ color: "#DC2626" }}>*</span>}
+                </label>
+                <input ref={ref} type={type || "text"} placeholder={ph}
+                  style={inputStyle(err ? errors[err] : null)} autoComplete="off" />
+                {err && errors[err] && <div style={{ color: "#DC2626", fontSize: 11, marginTop: 4 }}>{errors[err]}</div>}
+              </div>
+            ))}
+
+            {[
+              { label: "Company size", val: companySizeVal, set: setCompanySizeVal, opts: ["1–10","11–50","51–200","201–500","500+"] },
+              { label: "Role area", val: roleAreaVal, set: setRoleAreaVal, opts: ["Finance & Accounting","Technology","Legal & Compliance","Admin & Operations","Sales & Marketing","HR & Recruiting","Other"] },
+              { label: "Contract type", val: roleTypeVal, set: setRoleTypeVal, opts: ["Full-time","Part-time","PJ / Contractor","Project-based","Not sure"] },
+              { label: "Timeline", val: timelineVal, set: setTimelineVal, opts: ["ASAP (2 weeks)","Within 1 month","1–3 months","Just exploring"] },
+              { label: "Languages needed", val: languagesVal, set: setLanguagesVal, opts: ["English only","English + Portuguese","English + Spanish","English + PT + ES","Other"] },
+            ].map(({ label, val, set, opts }) => (
+              <div key={label} style={{ marginBottom: 18 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: P.textMuted, marginBottom: 6 }}>{label}</label>
+                <select value={val} onChange={e => set(e.target.value)} style={inputStyle()}>
+                  <option value="">Select...</option>
+                  {opts.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+            ))}
           </div>
-          <Field label="Role description" k="description" type="textarea" required placeholder="Describe the role and responsibilities..." />
-          <Field label="Ideal candidate" k="idealCandidate" type="textarea" placeholder="What experience or background?" />
-          <Field label="Biggest hiring challenge" k="challenges" type="textarea" placeholder="E.g.: Struggled to find bilingual candidates..." />
-          <Field label="How did you hear about Asoares?" k="howFound" options={["LinkedIn","Referral","Facebook group","Google search","Other"]} />
+
+          {[
+            { label: "Role description", ref: descriptionRef, ph: "Describe the role and responsibilities...", err: "description", req: true },
+            { label: "Ideal candidate", ref: idealCandidateRef, ph: "What experience or background are you looking for?" },
+            { label: "Biggest hiring challenge", ref: challengesRef, ph: "E.g.: Struggled to find bilingual candidates..." },
+          ].map(({ label, ref, ph, err, req }) => (
+            <div key={label} style={{ marginBottom: 18 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: P.textMuted, marginBottom: 6 }}>
+                {label} {req && <span style={{ color: "#DC2626" }}>*</span>}
+              </label>
+              <textarea ref={ref} placeholder={ph} rows={4}
+                style={{ ...inputStyle(err ? errors[err] : null), resize: "vertical" }} />
+              {err && errors[err] && <div style={{ color: "#DC2626", fontSize: 11, marginTop: 4 }}>{errors[err]}</div>}
+            </div>
+          ))}
+
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: P.textMuted, marginBottom: 6 }}>How did you hear about Asoares?</label>
+            <select value={howFoundVal} onChange={e => setHowFoundVal(e.target.value)} style={inputStyle()}>
+              <option value="">Select...</option>
+              {["LinkedIn","Referral","Facebook group","Google search","Other"].map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+
           <div style={{ background: "#EEF2FF", border: "1px solid #C7D7F5", borderRadius: 12, padding: "14px 18px", marginBottom: 24 }}>
             <div style={{ fontSize: 13, color: P.textMid, lineHeight: 1.6 }}>
               📩 <strong style={{ color: P.navy }}>What happens next:</strong> Asoares will review your request and reach out within <strong style={{ color: "#1B4FD8" }}>24–48 hours</strong>.
             </div>
           </div>
+
           <button onClick={handleSubmit} disabled={loading} style={{
             width: "100%", background: loading ? "#6B7A99" : "#1B4FD8",
             color: "#fff", border: "none", borderRadius: 12, padding: "15px",
@@ -1061,9 +1120,6 @@ function HireMe({ onBack }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════
-// PUBLIC — MAIN JOB BOARD
-// ══════════════════════════════════════════════════════════════
 function PublicSite() {
   const [jobs, setJobs] = useState([]);
   const [applying, setApplying] = useState(null);
