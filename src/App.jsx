@@ -1758,6 +1758,31 @@ function PublicSite() {
       <div style={{ backgroundImage: "url(https://images.unsplash.com/photo-1546708770-599a3abdf230?w=1600&q=80&auto=format&fit=crop)", backgroundSize: "cover", backgroundPosition: "center", padding: isMobile ? "44px 20px 40px" : "88px 24px 80px", textAlign: "center", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(8,13,26,0.78) 0%, rgba(8,13,26,0.62) 50%, rgba(8,13,26,0.85) 100%)", pointerEvents: "none" }} />
 
+        <div style={{ position: "relative", maxWidth: 700, margin: "0 auto", zIndex: 1 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(27,79,216,0.2)", border: "1px solid rgba(37,99,235,0.35)", borderRadius: 99, padding: "6px 16px", marginBottom: 32 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", boxShadow: "0 0 8px #22C55E" }} />
+            <span style={{ color: "#93B4F7", fontSize: isMobile ? 9 : 11, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase" }}>{t.tagline}</span>
+          </div>
+          {isMobile ? (
+            <h1 style={{ color: "#FFFFFF", fontSize: 24, fontWeight: 900, margin: "0 0 18px", lineHeight: 1.25, letterSpacing: -0.3, textAlign: "center" }}>
+              {t.hero.split("—")[0].trim()}{" "}
+              <span style={{ background: "linear-gradient(90deg, #4F8EF7, #93B4F7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                {t.hero.includes("—") ? t.hero.split("—")[1].trim() : ""}
+              </span>
+            </h1>
+          ) : (
+            <>
+              <h1 style={{ color: "#FFFFFF", fontSize: 52, fontWeight: 900, margin: "0 0 4px", lineHeight: 1.05, letterSpacing: -2 }}>
+                {t.hero.split("—")[0].trim()}
+              </h1>
+              <h1 style={{ background: "linear-gradient(90deg, #4F8EF7, #93B4F7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontSize: 52, fontWeight: 900, margin: "0 0 28px", lineHeight: 1.05, letterSpacing: -2 }}>
+                {t.hero.includes("—") ? "— " + t.hero.split("—")[1].trim() : ""}
+              </h1>
+            </>
+          )}
+          <p style={{ color: "rgba(255,255,255,0.65)", fontSize: isMobile ? 13 : 16, lineHeight: 1.75, maxWidth: 480, margin: "0 auto" }}>{t.heroSub}</p>
+        </div>
+      </div>
       {/* Blue accent bar */}
       <div style={{ height: 3, background: "linear-gradient(90deg, #0A1628, #1B4FD8, #2563EB, #0A1628)" }} />
 
