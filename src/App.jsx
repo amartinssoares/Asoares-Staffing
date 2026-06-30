@@ -1208,6 +1208,33 @@ function HireMe({ onBack }) {
       </div>
 
       <div style={{ maxWidth: 820, margin: "0 auto", padding: "32px 24px 48px" }}>
+
+        {/* About Allan / Why Asoares */}
+        <div style={{ background: P.navy, borderRadius: 20, padding: isMobile ? "24px 20px" : "32px 36px", marginBottom: 24, position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, background: "radial-gradient(circle, rgba(27,79,216,0.25) 0%, transparent 70%)", pointerEvents: "none" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", boxShadow: "0 0 8px #22C55E" }} />
+            <span style={{ color: "#93B4F7", fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase" }}>Who you're working with</span>
+          </div>
+          <h2 style={{ color: "#fff", fontSize: isMobile ? 19 : 22, fontWeight: 900, margin: "0 0 10px" }}>Allan Soares — Trilingual Recruiter</h2>
+          <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 13.5, lineHeight: 1.75, margin: "0 0 20px", maxWidth: 560 }}>
+            3+ years of full-cycle recruiting experience, with a background in the Brazilian Army and sales. I personally screen every candidate in English, Portuguese, and Spanish — so you only meet people who are actually qualified and ready to start.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)", gap: 10 }}>
+            {[
+              { icon: "🌎", text: "Deep Brazil network" },
+              { icon: "🗣️", text: "Trilingual screening" },
+              { icon: "⚡", text: "Fast turnaround" },
+              { icon: "✅", text: "Pre-vetted candidates" },
+            ].map((v, i) => (
+              <div key={i} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 16 }}>{v.icon}</span>
+                <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 11.5, fontWeight: 600, lineHeight: 1.3 }}>{v.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div style={{ background: P.surface, borderRadius: 20, padding: isMobile ? "24px 18px" : "36px", border: "1px solid " + P.border, boxShadow: "0 4px 20px rgba(15,32,68,0.06)" }}>
           <div style={{ display: "grid", gridTemplateColumns: cols, gap: "0 24px" }}>
             {[
