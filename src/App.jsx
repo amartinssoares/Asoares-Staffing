@@ -176,9 +176,11 @@ const T = {
     },
     required: "Required", invalidEmail: "Invalid email", selectLevel: "Select your level", duplicateEmail: "You already applied for this position.",
     about: "About", aboutTitle: "About the Recruiter",
-    aboutPitch: "Trilingual recruiter specialized in connecting Brazilian talent with American companies.",
-    aboutBio: "I'm Allan Soares, a recruiter based in Lehi, Utah with 3+ years of experience in recruiting, onboarding, and HR operations. With a background in the Brazilian Army and sales, I bring discipline, precision, and people skills to every placement. Fluent in English, Portuguese, and Spanish — I bridge the gap between U.S. companies and world-class Brazilian professionals.",
-    aboutHighlights: ["3+ years in HR & Recruiting", "Trilingual: EN / PT / ES", "Brazilian Army veteran", "Based in Lehi, Utah"],
+    aboutPitch: "Founder & CEO — connecting Brazilian talent with American companies.",
+    aboutWhyTitle: "Why Asoares exists",
+    aboutWhy: "I started Asoares after seeing the same problem from both sides: U.S. companies struggling to find reliable, English-proficient talent at a fair cost — and brilliant Brazilian professionals with no real way to access American opportunities. Most staffing agencies treat this as a numbers game. I built Asoares to do it differently: every candidate is personally interviewed and vetted by me, in their own language, before ever reaching a client. No mass job-board spam, no unqualified resumes — just real people, properly screened, matched to real roles.",
+    aboutBio: "I'm Allan Soares, Founder & CEO of Asoares International Staffing, and the recruiter behind every placement we make. I bring 3+ years of full-cycle recruiting experience, a background in the Brazilian Army, and years in sales — discipline, precision, and people skills applied to every hire. Fluent in English, Portuguese, and Spanish, I personally screen every candidate myself before they ever reach a client.",
+    aboutHighlights: ["Founder & CEO", "3+ years in HR & Recruiting", "Trilingual: EN / PT / ES", "Brazilian Army veteran"],
     linkedinBtn: "View LinkedIn Profile",
     translate: "Language",
     pay: "Paid in",
@@ -225,9 +227,11 @@ const T = {
     },
     required: "Obrigatório", invalidEmail: "Email inválido", selectLevel: "Selecione seu nível", duplicateEmail: "Você já aplicou para esta vaga.",
     about: "Sobre", aboutTitle: "Sobre o Recrutador",
-    aboutPitch: "Recrutador trilíngue especializado em conectar talentos brasileiros com empresas americanas.",
-    aboutBio: "Sou Allan Soares, recrutador baseado em Lehi, Utah com mais de 3 anos de experiência em recrutamento, onboarding e operações de RH. Com background no Exército Brasileiro e em vendas, trago disciplina, precisão e habilidade com pessoas para cada processo seletivo. Fluente em inglês, português e espanhol — faço a ponte entre empresas americanas e profissionais brasileiros de alto nível.",
-    aboutHighlights: ["3+ anos em RH & Recrutamento", "Trilíngue: EN / PT / ES", "Veterano do Exército Brasileiro", "Baseado em Lehi, Utah"],
+    aboutPitch: "Fundador & CEO — conectando talentos brasileiros com empresas americanas.",
+    aboutWhyTitle: "Por que a Asoares existe",
+    aboutWhy: "Comecei a Asoares depois de ver o mesmo problema dos dois lados: empresas americanas com dificuldade de encontrar talento confiável e fluente em inglês a um custo justo — e profissionais brasileiros brilhantes sem acesso real a oportunidades americanas. A maioria das agências de recrutamento trata isso como um jogo de números. Construí a Asoares para fazer diferente: cada candidato é entrevistado e avaliado pessoalmente por mim, no próprio idioma, antes de chegar a qualquer cliente. Sem spam de vagas em massa, sem currículos despreparados — apenas pessoas reais, devidamente avaliadas, combinadas com vagas reais.",
+    aboutBio: "Sou Allan Soares, Fundador & CEO da Asoares International Staffing, e o recrutador por trás de cada contratação que fazemos. Trago mais de 3 anos de experiência em recrutamento full-cycle, background no Exército Brasileiro e anos em vendas — disciplina, precisão e habilidade com pessoas aplicadas a cada processo. Fluente em inglês, português e espanhol, eu mesmo avalio pessoalmente cada candidato antes de chegarem a qualquer cliente.",
+    aboutHighlights: ["Fundador & CEO", "3+ anos em RH & Recrutamento", "Trilíngue: EN / PT / ES", "Veterano do Exército Brasileiro"],
     linkedinBtn: "Ver perfil no LinkedIn",
     translate: "Idioma",
     pay: "Pago em",
@@ -274,9 +278,11 @@ const T = {
     },
     required: "Requerido", invalidEmail: "Email inválido", selectLevel: "Selecciona tu nivel", duplicateEmail: "Ya aplicaste a este puesto.",
     about: "Acerca de", aboutTitle: "Acerca del Reclutador",
-    aboutPitch: "Reclutador trilingüe especializado en conectar talentos de Brasil con empresas americanas.",
-    aboutBio: "Soy Allan Soares, reclutador con base en Lehi, Utah con más de 3 años de experiencia en reclutamiento, onboarding y operaciones de RR.HH. Con antecedentes en el Ejército Brasileño y en ventas, aporto disciplina, precisión y habilidades interpersonales a cada proceso de selección. Fluido en inglés, portugués y español — sirvo de puente entre empresas americanas y profesionales brasileños de alto nivel.",
-    aboutHighlights: ["3+ años en RR.HH. & Reclutamiento", "Trilingüe: EN / PT / ES", "Veterano del Ejército Brasileño", "Con base en Lehi, Utah"],
+    aboutPitch: "Fundador & CEO — conectando talento brasileño con empresas americanas.",
+    aboutWhyTitle: "Por qué existe Asoares",
+    aboutWhy: "Empecé Asoares después de ver el mismo problema desde ambos lados: empresas americanas con dificultad para encontrar talento confiable y con buen inglés a un costo justo — y profesionales brasileños brillantes sin acceso real a oportunidades americanas. La mayoría de las agencias de reclutamiento tratan esto como un juego de números. Construí Asoares para hacerlo diferente: cada candidato es entrevistado y evaluado personalmente por mí, en su propio idioma, antes de llegar a cualquier cliente. Sin spam de vacantes masivas, sin currículums sin preparar — solo personas reales, debidamente evaluadas, emparejadas con vacantes reales.",
+    aboutBio: "Soy Allan Soares, Fundador & CEO de Asoares International Staffing, y el reclutador detrás de cada contratación que hacemos. Aporto más de 3 años de experiencia en reclutamiento full-cycle, antecedentes en el Ejército Brasileño y años en ventas — disciplina, precisión y habilidades interpersonales aplicadas a cada proceso. Fluido en inglés, portugués y español, yo mismo evalúo personalmente a cada candidato antes de que lleguen a cualquier cliente.",
+    aboutHighlights: ["Fundador & CEO", "3+ años en RR.HH. & Reclutamiento", "Trilingüe: EN / PT / ES", "Veterano del Ejército Brasileño"],
     linkedinBtn: "Ver perfil en LinkedIn",
     translate: "Idioma",
     pay: "Pagado en",
@@ -1418,6 +1424,10 @@ function PublicSite() {
                   ))}
                 </div>
               </div>
+            </div>
+            <div style={{ background: P.blueLight, border: "1px solid " + P.blueBorder, borderRadius: 14, padding: "16px 18px", marginBottom: 18 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: P.blue, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{t.aboutWhyTitle}</div>
+              <p style={{ color: P.navy, fontSize: 13, lineHeight: 1.8, margin: 0 }}>{t.aboutWhy}</p>
             </div>
             <p style={{ color: P.textMid, fontSize: 13, lineHeight: 1.8, margin: "0 0 20px" }}>{t.aboutBio}</p>
             <a href="https://www.linkedin.com/in/allan-soares-161057367" target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#0A66C2", color: "#fff", textDecoration: "none", borderRadius: 10, padding: "10px 18px", fontSize: 13, fontWeight: 700 }}>
