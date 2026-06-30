@@ -96,6 +96,38 @@ const DEFAULT_JOBS = [
       "Familiarity with QuickBooks or similar software",
       "Available for Mountain Time overlap (3–4 hrs/day)",
     ],
+    aboutCompany: "Nimbl provides the departments a business needs to scale, all under one roof — accounting, IT, global staffing, and strategy, brought into one coordinated system. With 100+ team members across the U.S., Philippines, and Latin America, Nimbl builds infrastructure that gives growing businesses freedom: freedom to focus, to grow without chaos, and to step back when the time is right.",
+    aboutRole: "As an FP&A Analyst, you'll work directly with U.S. small-business clients to build financial models, forecasts, and management reports that help business owners make confident decisions. You'll partner closely with the accounting team to translate raw financials into clear, actionable insight.",
+    compensation: "Competitive USD pay based on experience, paid monthly through Gusto.",
+    schedule: "Must have meaningful daily overlap with US Mountain Time (9am–5pm MT, Mon–Fri).",
+    active: true,
+  },
+  {
+    id: "client-manager",
+    title: "Client Manager",
+    company: "Nimbl",
+    location: "100% Remote (Latin America)",
+    type: "PJ Contractor (40 hrs/week)",
+    pay: "USD",
+    hours: "4+ hrs/day Mountain Time overlap",
+    area: "Finance & Accounting",
+    english: "Advanced",
+    description:
+      "Nimbl is looking for a Client Manager to own the monthly close from start to finish for a portfolio of growing U.S. small business clients — leading bookkeepers, reviewing financials, and being the trusted point of contact for clients.",
+    requirements: [
+      "At least 5 years of small business accounting experience",
+      "Experience with accrual adjusting entries, fixed assets, debt schedules",
+      "Experience preparing and analyzing financial statements",
+      "Strong with spreadsheets (especially Google Sheets) and accounting software",
+      "Experience owning the close process for multiple clients simultaneously",
+      "Advanced English — this is a client-facing role with US clients",
+      "Reliable remote setup with stable internet and a quiet workspace for client calls",
+      "Willing to complete a background check",
+    ],
+    aboutCompany: "Nimbl provides the departments a business needs to scale, all under one roof — accounting, IT, global staffing, and strategy, brought into one coordinated system. With 100+ team members across the U.S., Philippines, and Latin America, Nimbl builds infrastructure that gives growing businesses freedom: freedom to focus, to grow without chaos, and to step back when the time is right.",
+    aboutRole: "You are the quarterback of a client portfolio — part relationship owner, part month-end close leader, part process builder. You oversee the monthly close from beginning to end for a portfolio of growing small business clients, supported by Accounting Specialists (bookkeepers) who complete as much of the work as can be delegated. You create and document the workflows they follow, train them on the process, and review the bookkeeping, reconciliations, and financial statements for accuracy before delivering clean, client-ready financials. This is a client-facing role for an accountant who enjoys people and accountability — answering client questions, understanding their business and goals, and creating a consistently great experience through clear communication and reliable delivery.",
+    compensation: "$24,000–$48,000 USD/year depending on experience. 40 hr/week independent contractor engagement, paid monthly through Gusto. Includes 15 days of scheduled time away and 8 holidays per year.",
+    schedule: "Must have at least 4 hours of daily overlap with US Mountain Time (9am–5pm MT, Mon–Fri), with flexibility for additional overlap for meetings.",
     active: true,
   },
 ];
@@ -127,7 +159,11 @@ const T = {
       motivation: "Why do you want this position?", resume: "Resume",
       resumeHint: "PDF or Word — max 5MB", resumeClick: "Click to upload your resume",
       resumeFormats: "PDF, DOC or DOCX", resumeRemove: "Remove",
+      experienceLevel: "Years of experience in this field", usClients: "Have you worked with U.S. clients before?",
+      usClientsDetail: "Tell us briefly about that experience",
     },
+    yes: "Yes", no: "No",
+    experienceLevels: ["Less than 1 year", "1–2 years", "3–5 years", "5+ years"],
     englishLevels: ["Intermediate", "Advanced", "Fluent", "Native"],
     availOptions: ["Flexible", "Morning MT (8am–12pm)", "Afternoon MT (12pm–5pm)", "3–4h/day overlap"],
     placeholders: {
@@ -136,6 +172,7 @@ const T = {
       experience: "E.g.: 3 years working with U.S. clients, QuickBooks, reconciliation...",
       software: "QuickBooks, Xero, Excel, Power BI...", salary: "E.g.: $2,000 – $3,000/month",
       motivation: "Tell us about your motivation and what sets you apart...",
+      usClientsDetail: "E.g.: 2 years supporting a U.S.-based client via email and Zoom calls...",
     },
     required: "Required", invalidEmail: "Invalid email", selectLevel: "Select your level", duplicateEmail: "You already applied for this position.",
     about: "About", aboutTitle: "About the Recruiter",
@@ -171,7 +208,11 @@ const T = {
       motivation: "Por que você quer esta vaga?", resume: "Currículo",
       resumeHint: "PDF ou Word — máx. 5MB", resumeClick: "Clique para enviar seu currículo",
       resumeFormats: "PDF, DOC ou DOCX", resumeRemove: "Remover",
+      experienceLevel: "Anos de experiência nesta área", usClients: "Você já trabalhou com clientes dos EUA?",
+      usClientsDetail: "Conte brevemente sobre essa experiência",
     },
+    yes: "Sim", no: "Não",
+    experienceLevels: ["Menos de 1 ano", "1–2 anos", "3–5 anos", "5+ anos"],
     englishLevels: ["Intermediário", "Avançado", "Fluente", "Nativo"],
     availOptions: ["Flexível", "Manhã MT (8am–12pm)", "Tarde MT (12pm–5pm)", "Overlap de 3–4h/dia"],
     placeholders: {
@@ -180,6 +221,7 @@ const T = {
       experience: "Ex: 3 anos trabalhando com clientes nos EUA, QuickBooks, reconciliação...",
       software: "QuickBooks, Xero, Excel, Power BI...", salary: "Ex: $2,000 – $3,000/mês",
       motivation: "Conte um pouco sobre sua motivação e o que te diferencia...",
+      usClientsDetail: "Ex: 2 anos apoiando um cliente dos EUA por email e chamadas no Zoom...",
     },
     required: "Obrigatório", invalidEmail: "Email inválido", selectLevel: "Selecione seu nível", duplicateEmail: "Você já aplicou para esta vaga.",
     about: "Sobre", aboutTitle: "Sobre o Recrutador",
@@ -215,7 +257,11 @@ const T = {
       motivation: "¿Por qué quieres este puesto?", resume: "Currículum",
       resumeHint: "PDF o Word — máx. 5MB", resumeClick: "Haz clic para subir tu currículum",
       resumeFormats: "PDF, DOC o DOCX", resumeRemove: "Eliminar",
+      experienceLevel: "Años de experiencia en este campo", usClients: "¿Has trabajado con clientes de EE.UU. antes?",
+      usClientsDetail: "Cuéntanos brevemente sobre esa experiencia",
     },
+    yes: "Sí", no: "No",
+    experienceLevels: ["Menos de 1 año", "1–2 años", "3–5 años", "5+ años"],
     englishLevels: ["Intermedio", "Avanzado", "Fluido", "Nativo"],
     availOptions: ["Flexible", "Mañana MT (8am–12pm)", "Tarde MT (12pm–5pm)", "Overlap de 3–4h/día"],
     placeholders: {
@@ -224,6 +270,7 @@ const T = {
       experience: "Ej: 3 años trabajando con clientes en EE.UU., QuickBooks, conciliación...",
       software: "QuickBooks, Xero, Excel, Power BI...", salary: "Ej: $2,000 – $3,000/mes",
       motivation: "Cuéntanos sobre tu motivación y lo que te diferencia...",
+      usClientsDetail: "Ej: 2 años apoyando a un cliente de EE.UU. por email y llamadas de Zoom...",
     },
     required: "Requerido", invalidEmail: "Email inválido", selectLevel: "Selecciona tu nivel", duplicateEmail: "Ya aplicaste a este puesto.",
     about: "Acerca de", aboutTitle: "Acerca del Reclutador",
@@ -391,7 +438,7 @@ const Icon = {
 // ══════════════════════════════════════════════════════════════
 // PUBLIC — JOB BOARD
 // ══════════════════════════════════════════════════════════════
-function JobCard({ job, onApply, t, onHome }) {
+function JobCard({ job, onApply, onViewDetails, t, onHome }) {
   const tl = t || T.en;
   const [hovered, setHovered] = useState(false);
   const isMobile = useIsMobile();
@@ -445,6 +492,15 @@ function JobCard({ job, onApply, t, onHome }) {
         </ul>
       </div>
 
+      {job.aboutRole && (
+        <button onClick={() => onViewDetails(job)} style={{
+          width: "100%", background: "transparent", color: P.blue,
+          border: "1.5px solid " + P.blueBorder, borderRadius: 10, padding: "11px",
+          fontSize: 13, fontWeight: 700, cursor: "pointer", marginBottom: 10,
+        }}>
+          View full job details →
+        </button>
+      )}
       <button onClick={() => onApply(job)} style={{
         width: "100%",
         background: hovered ? P.blue : P.navy,
@@ -522,10 +578,13 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
   const softwareRef = useRef();
   const salaryRef = useRef();
   const motivationRef = useRef();
+  const usClientsDetailRef = useRef();
 
   // Selects need state (no ref alternative)
   const [english, setEnglish] = useState("");
   const [availability, setAvailability] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState("");
+  const [usClients, setUsClients] = useState("");
   const [resume, setResume] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [submittedId, setSubmittedId] = useState("");
@@ -556,6 +615,9 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
       availability,
       salary: salaryRef.current?.value?.trim() || "",
       motivation: motivationRef.current?.value?.trim() || "",
+      experienceLevel,
+      usClients,
+      usClientsDetail: usClientsDetailRef.current?.value?.trim() || "",
     };
   }
 
@@ -567,6 +629,8 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
     if (!vals.whatsapp) e.whatsapp = tl.required;
     if (!vals.english) e.english = tl.selectLevel;
     if (!vals.experience) e.experience = tl.required;
+    if (!vals.experienceLevel) e.experienceLevel = tl.selectLevel;
+    if (!vals.usClients) e.usClients = tl.selectLevel;
     if (Object.keys(e).length) { setErrors(e); return; }
 
     setLoading(true);
@@ -687,6 +751,39 @@ function ApplicationForm({ job, onBack, onSubmit, lang, t }) {
           style={{ ...inputStyle(errors.experience), resize: "vertical" }} />
         {errors.experience && <div style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>{errors.experience}</div>}
       </div>
+
+      {/* Experience level + US clients */}
+      <div style={{ display: "grid", gridTemplateColumns: cols, gap: "0 24px" }}>
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>
+            {tl.fields.experienceLevel} <span style={{ color: "#EF4444" }}>*</span>
+          </label>
+          <select value={experienceLevel} onChange={e => setExperienceLevel(e.target.value)} style={inputStyle(errors.experienceLevel)}>
+            <option value="">Select...</option>
+            {tl.experienceLevels.map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
+          {errors.experienceLevel && <div style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>{errors.experienceLevel}</div>}
+        </div>
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>
+            {tl.fields.usClients} <span style={{ color: "#EF4444" }}>*</span>
+          </label>
+          <select value={usClients} onChange={e => setUsClients(e.target.value)} style={inputStyle(errors.usClients)}>
+            <option value="">Select...</option>
+            <option value="Yes">{tl.yes}</option>
+            <option value="No">{tl.no}</option>
+          </select>
+          {errors.usClients && <div style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>{errors.usClients}</div>}
+        </div>
+      </div>
+
+      {usClients === "Yes" && (
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E3D5C", marginBottom: 6 }}>{tl.fields.usClientsDetail}</label>
+          <textarea ref={usClientsDetailRef} placeholder={tl.placeholders.usClientsDetail} rows={3}
+            style={{ ...inputStyle(), resize: "vertical" }} />
+        </div>
+      )}
 
       {/* Motivation */}
       <div style={{ marginBottom: 18 }}>
@@ -881,7 +978,80 @@ function PreScreen({ job, t, lang, onBack }) {
 
 const AREAS = ["All", "Finance & Accounting", "Technology", "Legal & Compliance", "Admin & Operations", "Sales & Marketing", "Other"];
 
-function JobsWithFilter({ jobs, onApply, t, onHome }) {
+function JobDetail({ job, onApply, onBack, t }) {
+  const tl = t || T.en;
+  const isMobile = useIsMobile();
+  return (
+    <div>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: P.blue, cursor: "pointer", fontSize: 14, fontWeight: 600, marginBottom: 24, padding: 0 }}>{tl.back}</button>
+
+      <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 800, letterSpacing: 2, color: P.blue, textTransform: "uppercase" }}>{job.company}</div>
+      <h1 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 900, color: P.navy, margin: "0 0 16px", lineHeight: 1.15 }}>{job.title}</h1>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
+        {[
+          { icon: <Icon.MapPin />, text: job.location },
+          { icon: <Icon.Briefcase />, text: job.type },
+          { icon: <Icon.Dollar />, text: tl.pay + " " + job.pay },
+          { icon: <Icon.Clock />, text: job.hours },
+          { icon: <Icon.Globe />, text: tl.fields.english + ": " + job.english },
+        ].map((tag, i) => (
+          <span key={i} style={{ display: "flex", alignItems: "center", gap: 6, background: P.surfaceAlt, color: P.textMid, fontSize: 12, fontWeight: 600, padding: "6px 13px", borderRadius: 8, border: "1px solid #E2E6EE" }}>
+            <span style={{ color: P.textMuted }}>{tag.icon}</span>{tag.text}
+          </span>
+        ))}
+      </div>
+
+      {job.aboutCompany && (
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: P.blue, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>About {job.company}</div>
+          <p style={{ color: P.textMid, fontSize: 14.5, lineHeight: 1.8, margin: 0 }}>{job.aboutCompany}</p>
+        </div>
+      )}
+
+      {job.aboutRole && (
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: P.blue, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>About the Role</div>
+          <p style={{ color: P.textMid, fontSize: 14.5, lineHeight: 1.8, margin: 0 }}>{job.aboutRole}</p>
+        </div>
+      )}
+
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: 12, fontWeight: 800, color: P.blue, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>{tl.requirements}</div>
+        <ul style={{ margin: 0, paddingLeft: 20 }}>
+          {job.requirements.map((r, i) => (
+            <li key={i} style={{ color: P.textMid, fontSize: 14, marginBottom: 8, lineHeight: 1.6 }}>{r}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14, marginBottom: 32 }}>
+        {job.compensation && (
+          <div style={{ background: P.blueLight, border: "1px solid " + P.blueBorder, borderRadius: 12, padding: "16px 18px" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: P.blue, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>💰 Compensation</div>
+            <div style={{ color: P.navy, fontSize: 13.5, lineHeight: 1.6 }}>{job.compensation}</div>
+          </div>
+        )}
+        {job.schedule && (
+          <div style={{ background: P.blueLight, border: "1px solid " + P.blueBorder, borderRadius: 12, padding: "16px 18px" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: P.blue, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>🕐 Schedule</div>
+            <div style={{ color: P.navy, fontSize: 13.5, lineHeight: 1.6 }}>{job.schedule}</div>
+          </div>
+        )}
+      </div>
+
+      <button onClick={() => onApply(job)} style={{
+        width: "100%", background: P.blue, color: "#fff", border: "none", borderRadius: 12,
+        padding: "16px", fontSize: 15, fontWeight: 800, cursor: "pointer",
+        boxShadow: "0 4px 18px rgba(27,79,216,0.3)",
+      }}>
+        {tl.applyBtn}
+      </button>
+    </div>
+  );
+}
+
+function JobsWithFilter({ jobs, onApply, onViewDetails, t, onHome }) {
   const [area, setArea] = useState("All");
   const filtered = area === "All" ? jobs : jobs.filter(j => (j.area || "Other") === area);
   const available = [...new Set(jobs.map(j => j.area || "Other"))];
@@ -914,7 +1084,7 @@ function JobsWithFilter({ jobs, onApply, t, onHome }) {
           <div style={{ fontWeight: 700, color: P.navy }}>No openings in this area right now</div>
         </div>
       ) : (
-        filtered.map(job => <div key={job.id} style={{ marginBottom: 14 }}><JobCard job={job} onApply={onApply} t={t} onHome={onHome} /></div>)
+        filtered.map(job => <div key={job.id} style={{ marginBottom: 14 }}><JobCard job={job} onApply={onApply} onViewDetails={onViewDetails} t={t} onHome={onHome} /></div>)
       )}
     </div>
   );
@@ -1123,6 +1293,7 @@ function HireMe({ onBack }) {
 function PublicSite() {
   const [jobs, setJobs] = useState([]);
   const [applying, setApplying] = useState(null);
+  const [viewingJob, setViewingJob] = useState(null);
   const [lang, setLang] = useState(() => {
     try { return localStorage.getItem("asoares_lang") || "en"; } catch { return "en"; }
   });
@@ -1268,6 +1439,11 @@ function PublicSite() {
           <PreScreen job={applying} t={t} lang={lang}
             onBack={() => setApplying(null)}
           />
+        ) : viewingJob ? (
+          <JobDetail job={viewingJob} t={t}
+            onBack={() => setViewingJob(null)}
+            onApply={(job) => { setViewingJob(null); setApplying(job); }}
+          />
         ) : activeJobs.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 20px" }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
@@ -1275,7 +1451,7 @@ function PublicSite() {
             <div style={{ fontSize: 14, color: P.textMuted, marginTop: 6 }}>{t.noJobsSub}</div>
           </div>
         ) : (
-          <JobsWithFilter jobs={activeJobs} onApply={setApplying} t={t} onHome={() => { setApplying(null); setHireMe(false); }} />
+          <JobsWithFilter jobs={activeJobs} onApply={setApplying} onViewDetails={setViewingJob} t={t} onHome={() => { setApplying(null); setViewingJob(null); setHireMe(false); }} />
         )}
       </div>
 
@@ -1369,7 +1545,7 @@ function CandidateModal({ candidate, jobs, onClose, onStatusChange, onDelete, on
           {candidate.jobTitle} — {candidate.company} · Applied {formatDate(candidate.appliedAt)}
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
-          {[["Email", candidate.email],["WhatsApp", candidate.whatsapp],["LinkedIn", candidate.linkedin || "—"],["City", candidate.city || "—"],["English", candidate.english || "—"],["Availability", candidate.availability || "—"],["Salary", candidate.salary || "—"],["Software", candidate.software || "—"]].map(([l,v]) => (
+          {[["Email", candidate.email],["WhatsApp", candidate.whatsapp],["LinkedIn", candidate.linkedin || "—"],["City", candidate.city || "—"],["English", candidate.english || "—"],["Availability", candidate.availability || "—"],["Salary", candidate.salary || "—"],["Software", candidate.software || "—"],["Experience level", candidate.experienceLevel || "—"],["US clients before?", candidate.usClients || "—"]].map(([l,v]) => (
             <div key={l} style={{ background: "#F8FAFF", borderRadius: 10, padding: "10px 14px" }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1 }}>{l}</div>
               <div style={{ fontSize: 14, color: "#111827", fontWeight: 600, marginTop: 2 }}>{v}</div>
@@ -1377,6 +1553,7 @@ function CandidateModal({ candidate, jobs, onClose, onStatusChange, onDelete, on
           ))}
         </div>
         {candidate.experience && <div style={{ marginBottom: 12 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Experience</div><p style={{ color: "#374151", fontSize: 14, lineHeight: 1.7, margin: 0, background: "#F8FAFF", borderRadius: 10, padding: "12px 16px" }}>{candidate.experience}</p></div>}
+        {candidate.usClientsDetail && <div style={{ marginBottom: 12 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>U.S. Client Experience</div><p style={{ color: "#374151", fontSize: 14, lineHeight: 1.7, margin: 0, background: "#F8FAFF", borderRadius: 10, padding: "12px 16px" }}>{candidate.usClientsDetail}</p></div>}
         {candidate.motivation && <div style={{ marginBottom: 12 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Motivation</div><p style={{ color: "#374151", fontSize: 14, lineHeight: 1.7, margin: 0, background: "#F8FAFF", borderRadius: 10, padding: "12px 16px" }}>{candidate.motivation}</p></div>}
         {candidate.resume && <div style={{ marginBottom: 16 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Resume</div><a href={candidate.resume.base64} download={candidate.resume.name} style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "#EFF6FF", border: "1.5px solid #BFDBFE", borderRadius: 10, padding: "12px 18px", textDecoration: "none", color: "#1D4ED8", fontWeight: 700, fontSize: 14 }}>📄 {candidate.resume.name}</a></div>}
         {candidate.linkedin && <div style={{ marginBottom: 16 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>LinkedIn</div><a href={candidate.linkedin.startsWith("http") ? candidate.linkedin : "https://" + candidate.linkedin} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#F0F9FF", border: "1.5px solid #BAE6FD", borderRadius: 10, padding: "10px 16px", textDecoration: "none", color: "#0369A1", fontWeight: 600, fontSize: 14 }}>💼 {candidate.linkedin}</a></div>}
