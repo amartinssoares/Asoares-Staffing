@@ -1166,7 +1166,7 @@ function HireMe({ onBack }) {
     const lead = { id: generateId(), submittedAt: new Date().toISOString(), status: "new", ...vals };
     await saveCompanyLead(lead);
     await sendEmailNotification(EMAILJS_TEMPLATE_COMPANY, {
-      to_email: "amartinssoares3@gmail.com", to_name: "Allan",
+      to_email: "allan@asoaresstaffing.com", to_name: "Allan",
       contact_name: vals.contactName, contact_email: vals.email,
       company_name: vals.company, role_title: vals.roleTitle,
       role_area: vals.roleArea || "—", submitted_at: new Date().toLocaleString("en-US"),
@@ -1403,8 +1403,8 @@ function PublicSite() {
               <span>{item.icon}</span>{item.label}
             </button>
           ))}
-          <a href="mailto:amartinssoares3@gmail.com" style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", color: P.textMuted, fontSize: 12, textDecoration: "none" }}>
-            <span>✉️</span>amartinssoares3@gmail.com
+          <a href="mailto:allan@asoaresstaffing.com" style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", color: P.textMuted, fontSize: 12, textDecoration: "none" }}>
+            <span>✉️</span>allan@asoaresstaffing.com
           </a>
         </div>
       )}
@@ -1421,10 +1421,10 @@ function PublicSite() {
               {
                 title: lang === "pt" ? "Quem somos" : lang === "es" ? "Quiénes somos" : "Who we are",
                 text: lang === "pt"
-                  ? "A Asoares International Staffing é uma empresa de recrutamento internacional com sede em Lehi, Utah, EUA, que conecta profissionais brasileiros com empresas americanas. Responsável pelos dados: Allan Soares — amartinssoares3@gmail.com"
+                  ? "A Asoares International Staffing é uma empresa de recrutamento internacional com sede em Lehi, Utah, EUA, que conecta profissionais brasileiros com empresas americanas. Responsável pelos dados: Allan Soares — allan@asoaresstaffing.com"
                   : lang === "es"
-                  ? "Asoares International Staffing es una empresa de reclutamiento internacional con sede en Lehi, Utah, EE.UU., que conecta profesionales brasileños con empresas americanas. Responsable de datos: Allan Soares — amartinssoares3@gmail.com"
-                  : "Asoares International Staffing is an international recruiting company based in Lehi, Utah, USA, connecting Brazilian professionals with U.S. companies. Data controller: Allan Soares — amartinssoares3@gmail.com"
+                  ? "Asoares International Staffing es una empresa de reclutamiento internacional con sede en Lehi, Utah, EE.UU., que conecta profesionales brasileños con empresas americanas. Responsable de datos: Allan Soares — allan@asoaresstaffing.com"
+                  : "Asoares International Staffing is an international recruiting company based in Lehi, Utah, USA, connecting Brazilian professionals with U.S. companies. Data controller: Allan Soares — allan@asoaresstaffing.com"
               },
               {
                 title: lang === "pt" ? "Quais dados coletamos" : lang === "es" ? "Qué datos recopilamos" : "What data we collect",
@@ -1453,18 +1453,18 @@ function PublicSite() {
               {
                 title: lang === "pt" ? "Seus direitos" : lang === "es" ? "Sus derechos" : "Your rights",
                 text: lang === "pt"
-                  ? "Você pode a qualquer momento: solicitar acesso aos seus dados, pedir a correção ou exclusão dos seus dados, revogar seu consentimento. Para isso, entre em contato: amartinssoares3@gmail.com. Atenderemos sua solicitação em até 30 dias."
+                  ? "Você pode a qualquer momento: solicitar acesso aos seus dados, pedir a correção ou exclusão dos seus dados, revogar seu consentimento. Para isso, entre em contato: allan@asoaresstaffing.com. Atenderemos sua solicitação em até 30 dias."
                   : lang === "es"
-                  ? "Puede en cualquier momento: solicitar acceso a sus datos, pedir la corrección o eliminación de sus datos, revocar su consentimiento. Para ello, contacte: amartinssoares3@gmail.com. Atenderemos su solicitud en un plazo de 30 días."
-                  : "You may at any time: request access to your data, request correction or deletion of your data, withdraw your consent. To do so, contact: amartinssoares3@gmail.com. We will respond within 30 days."
+                  ? "Puede en cualquier momento: solicitar acceso a sus datos, pedir la corrección o eliminación de sus datos, revocar su consentimiento. Para ello, contacte: allan@asoaresstaffing.com. Atenderemos su solicitud en un plazo de 30 días."
+                  : "You may at any time: request access to your data, request correction or deletion of your data, withdraw your consent. To do so, contact: allan@asoaresstaffing.com. We will respond within 30 days."
               },
               {
                 title: lang === "pt" ? "Contato" : lang === "es" ? "Contacto" : "Contact",
                 text: lang === "pt"
-                  ? "Dúvidas sobre esta política? Entre em contato: Allan Soares — amartinssoares3@gmail.com — (385) 574-2014 — Lehi, Utah, EUA"
+                  ? "Dúvidas sobre esta política? Entre em contato: Allan Soares — allan@asoaresstaffing.com — (385) 574-2014 — Lehi, Utah, EUA"
                   : lang === "es"
-                  ? "¿Preguntas sobre esta política? Contacte: Allan Soares — amartinssoares3@gmail.com — (385) 574-2014 — Lehi, Utah, EE.UU."
-                  : "Questions about this policy? Contact: Allan Soares — amartinssoares3@gmail.com — (385) 574-2014 — Lehi, Utah, USA"
+                  ? "¿Preguntas sobre esta política? Contacte: Allan Soares — allan@asoaresstaffing.com — (385) 574-2014 — Lehi, Utah, EE.UU."
+                  : "Questions about this policy? Contact: Allan Soares — allan@asoaresstaffing.com — (385) 574-2014 — Lehi, Utah, USA"
               },
             ].map((section, i) => (
               <div key={i} style={{ marginBottom: 20, paddingBottom: 20, borderBottom: i < 5 ? "1px solid #E2E6EE" : "none" }}>
@@ -1572,7 +1572,7 @@ function PublicSite() {
         </div>
         <div style={{ display: "flex", gap: 20 }}>
           <a href="tel:+13855742014" style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, textDecoration: "none" }}>(385) 574-2014</a>
-          <a href="mailto:amartinssoares3@gmail.com" style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, textDecoration: "none" }}>amartinssoares3@gmail.com</a>
+          <a href="mailto:allan@asoaresstaffing.com" style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, textDecoration: "none" }}>allan@asoaresstaffing.com</a>
           <button onClick={() => setPrivacyOpen(true)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: 11, cursor: "pointer", padding: 0, textDecoration: "underline" }}>{t.privacy}</button>
           <span onClick={() => setMode('login')} title="Admin" style={{ color: "rgba(255,255,255,0.12)", fontSize: 14, cursor: "pointer", userSelect: "none" }}>⚙</span>
         </div>
