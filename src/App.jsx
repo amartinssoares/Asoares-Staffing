@@ -176,6 +176,7 @@ const T = {
     },
     required: "Required", invalidEmail: "Invalid email", selectLevel: "Select your level", duplicateEmail: "You already applied for this position.",
     about: "About", aboutTitle: "About the Recruiter",
+    privacy: "Privacy Policy",
     aboutPitch: "Founder & CEO — connecting Brazilian talent with American companies.",
     aboutWhyTitle: "Why Asoares exists",
     aboutWhy: "I started Asoares after seeing the same problem from both sides: U.S. companies struggling to find reliable, English-proficient talent at a fair cost — and brilliant Brazilian professionals with no real way to access American opportunities. Most staffing agencies treat this as a numbers game. I built Asoares to do it differently: every candidate is personally interviewed and vetted by me, in their own language, before ever reaching a client. No mass job-board spam, no unqualified resumes — just real people, properly screened, matched to real roles.",
@@ -227,6 +228,7 @@ const T = {
     },
     required: "Obrigatório", invalidEmail: "Email inválido", selectLevel: "Selecione seu nível", duplicateEmail: "Você já aplicou para esta vaga.",
     about: "Sobre", aboutTitle: "Sobre o Recrutador",
+    privacy: "Política de Privacidade",
     aboutPitch: "Fundador & CEO — conectando talentos brasileiros com empresas americanas.",
     aboutWhyTitle: "Por que a Asoares existe",
     aboutWhy: "Comecei a Asoares depois de ver o mesmo problema dos dois lados: empresas americanas com dificuldade de encontrar talento confiável e fluente em inglês a um custo justo — e profissionais brasileiros brilhantes sem acesso real a oportunidades americanas. A maioria das agências de recrutamento trata isso como um jogo de números. Construí a Asoares para fazer diferente: cada candidato é entrevistado e avaliado pessoalmente por mim, no próprio idioma, antes de chegar a qualquer cliente. Sem spam de vagas em massa, sem currículos despreparados — apenas pessoas reais, devidamente avaliadas, combinadas com vagas reais.",
@@ -278,6 +280,7 @@ const T = {
     },
     required: "Requerido", invalidEmail: "Email inválido", selectLevel: "Selecciona tu nivel", duplicateEmail: "Ya aplicaste a este puesto.",
     about: "Acerca de", aboutTitle: "Acerca del Reclutador",
+    privacy: "Política de Privacidad",
     aboutPitch: "Fundador & CEO — conectando talento brasileño con empresas americanas.",
     aboutWhyTitle: "Por qué existe Asoares",
     aboutWhy: "Empecé Asoares después de ver el mismo problema desde ambos lados: empresas americanas con dificultad para encontrar talento confiable y con buen inglés a un costo justo — y profesionales brasileños brillantes sin acceso real a oportunidades americanas. La mayoría de las agencias de reclutamiento tratan esto como un juego de números. Construí Asoares para hacerlo diferente: cada candidato es entrevistado y evaluado personalmente por mí, en su propio idioma, antes de llegar a cualquier cliente. Sin spam de vacantes masivas, sin currículums sin preparar — solo personas reales, debidamente evaluadas, emparejadas con vacantes reales.",
@@ -1337,6 +1340,7 @@ function PublicSite() {
   }, [lang]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const [hireMe, setHireMe] = useState(false);
   const isMobile = useIsMobile();
   const t = T[lang];
@@ -1406,6 +1410,74 @@ function PublicSite() {
       )}
 
       {/* ── About Drawer ── */}
+      {privacyOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(10,22,40,0.55)", backdropFilter: "blur(4px)", display: "flex", alignItems: "flex-end" }} onClick={() => setPrivacyOpen(false)}>
+          <div style={{ width: "100%", background: "#fff", borderTopLeftRadius: 24, borderTopRightRadius: 24, borderTop: "3px solid #1B4FD8", maxHeight: "90vh", overflowY: "auto", padding: "28px 24px 44px" }} onClick={e => e.stopPropagation()}>
+            <div style={{ width: 32, height: 3, background: "#E2E6EE", borderRadius: 99, margin: "0 auto 24px" }} />
+            <h2 style={{ fontSize: 20, fontWeight: 900, color: "#0A1628", marginBottom: 4 }}>{t.privacy}</h2>
+            <p style={{ color: "#6B7A99", fontSize: 11, marginBottom: 20 }}>Asoares International Staffing — Last updated: June 2026</p>
+
+            {[
+              {
+                title: lang === "pt" ? "Quem somos" : lang === "es" ? "Quiénes somos" : "Who we are",
+                text: lang === "pt"
+                  ? "A Asoares International Staffing é uma empresa de recrutamento internacional com sede em Lehi, Utah, EUA, que conecta profissionais brasileiros com empresas americanas. Responsável pelos dados: Allan Soares — amartinssoares3@gmail.com"
+                  : lang === "es"
+                  ? "Asoares International Staffing es una empresa de reclutamiento internacional con sede en Lehi, Utah, EE.UU., que conecta profesionales brasileños con empresas americanas. Responsable de datos: Allan Soares — amartinssoares3@gmail.com"
+                  : "Asoares International Staffing is an international recruiting company based in Lehi, Utah, USA, connecting Brazilian professionals with U.S. companies. Data controller: Allan Soares — amartinssoares3@gmail.com"
+              },
+              {
+                title: lang === "pt" ? "Quais dados coletamos" : lang === "es" ? "Qué datos recopilamos" : "What data we collect",
+                text: lang === "pt"
+                  ? "Quando você se candidata a uma vaga, coletamos: nome completo, email, WhatsApp, LinkedIn, cidade, nível de inglês, disponibilidade, pretensão salarial, experiência profissional, motivação e currículo (PDF/Word). Quando uma empresa nos contata, coletamos: nome, cargo, empresa, email, telefone e detalhes da vaga."
+                  : lang === "es"
+                  ? "Cuando aplica a una vacante, recopilamos: nombre completo, email, WhatsApp, LinkedIn, ciudad, nivel de inglés, disponibilidad, expectativa salarial, experiencia profesional, motivación y currículum (PDF/Word). Cuando una empresa nos contacta, recopilamos: nombre, cargo, empresa, email, teléfono y detalles de la vacante."
+                  : "When you apply to a position, we collect: full name, email, WhatsApp, LinkedIn, city, English level, availability, salary expectation, professional experience, motivation, and resume (PDF/Word). When a company contacts us, we collect: name, title, company, email, phone, and role details."
+              },
+              {
+                title: lang === "pt" ? "Como usamos seus dados" : lang === "es" ? "Cómo usamos sus datos" : "How we use your data",
+                text: lang === "pt"
+                  ? "Seus dados são usados exclusivamente para: (1) avaliar sua candidatura para vagas disponíveis; (2) entrar em contato com você via email ou WhatsApp; (3) compartilhar seu perfil com empresas clientes caso seu perfil seja compatível. Não vendemos nem compartilhamos seus dados com terceiros fora desse processo."
+                  : lang === "es"
+                  ? "Sus datos se utilizan exclusivamente para: (1) evaluar su candidatura para vacantes disponibles; (2) contactarle por email o WhatsApp; (3) compartir su perfil con empresas cliente si su perfil es compatible. No vendemos ni compartimos sus datos con terceros fuera de este proceso."
+                  : "Your data is used exclusively to: (1) evaluate your application for available positions; (2) contact you via email or WhatsApp; (3) share your profile with client companies if you are a match. We do not sell or share your data with third parties outside of this process."
+              },
+              {
+                title: lang === "pt" ? "Onde armazenamos seus dados" : lang === "es" ? "Dónde almacenamos sus datos" : "Where we store your data",
+                text: lang === "pt"
+                  ? "Seus dados são armazenados de forma segura no Supabase (banco de dados em nuvem hospedado nos EUA), com acesso restrito ao recrutador responsável. Currículos são armazenados em formato criptografado."
+                  : lang === "es"
+                  ? "Sus datos se almacenan de forma segura en Supabase (base de datos en la nube alojada en EE.UU.), con acceso restringido al reclutador responsable. Los currículums se almacenan en formato cifrado."
+                  : "Your data is stored securely on Supabase (a cloud database hosted in the USA), with access restricted to the responsible recruiter. Resumes are stored in encrypted format."
+              },
+              {
+                title: lang === "pt" ? "Seus direitos" : lang === "es" ? "Sus derechos" : "Your rights",
+                text: lang === "pt"
+                  ? "Você pode a qualquer momento: solicitar acesso aos seus dados, pedir a correção ou exclusão dos seus dados, revogar seu consentimento. Para isso, entre em contato: amartinssoares3@gmail.com. Atenderemos sua solicitação em até 30 dias."
+                  : lang === "es"
+                  ? "Puede en cualquier momento: solicitar acceso a sus datos, pedir la corrección o eliminación de sus datos, revocar su consentimiento. Para ello, contacte: amartinssoares3@gmail.com. Atenderemos su solicitud en un plazo de 30 días."
+                  : "You may at any time: request access to your data, request correction or deletion of your data, withdraw your consent. To do so, contact: amartinssoares3@gmail.com. We will respond within 30 days."
+              },
+              {
+                title: lang === "pt" ? "Contato" : lang === "es" ? "Contacto" : "Contact",
+                text: lang === "pt"
+                  ? "Dúvidas sobre esta política? Entre em contato: Allan Soares — amartinssoares3@gmail.com — (385) 574-2014 — Lehi, Utah, EUA"
+                  : lang === "es"
+                  ? "¿Preguntas sobre esta política? Contacte: Allan Soares — amartinssoares3@gmail.com — (385) 574-2014 — Lehi, Utah, EE.UU."
+                  : "Questions about this policy? Contact: Allan Soares — amartinssoares3@gmail.com — (385) 574-2014 — Lehi, Utah, USA"
+              },
+            ].map((section, i) => (
+              <div key={i} style={{ marginBottom: 20, paddingBottom: 20, borderBottom: i < 5 ? "1px solid #E2E6EE" : "none" }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: "#1B4FD8", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{section.title}</div>
+                <p style={{ color: "#2E3D5C", fontSize: 13, lineHeight: 1.8, margin: 0 }}>{section.text}</p>
+              </div>
+            ))}
+
+            <button onClick={() => setPrivacyOpen(false)} style={{ display: "block", background: "none", border: "1px solid #E2E6EE", borderRadius: 10, padding: "10px", fontSize: 13, color: "#6B7A99", fontWeight: 600, cursor: "pointer", width: "100%", marginTop: 8 }}>✕ Close</button>
+          </div>
+        </div>
+      )}
+
       {aboutOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(10,22,40,0.45)", backdropFilter: "blur(4px)", display: "flex", alignItems: "flex-end" }} onClick={() => setAboutOpen(false)}>
           <div style={{ width: "100%", background: P.white, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderTop: "3px solid #1B4FD8", maxHeight: "90vh", overflowY: "auto", padding: "28px 24px 44px" }} onClick={e => e.stopPropagation()}>
@@ -1501,6 +1573,7 @@ function PublicSite() {
         <div style={{ display: "flex", gap: 20 }}>
           <a href="tel:+13855742014" style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, textDecoration: "none" }}>(385) 574-2014</a>
           <a href="mailto:amartinssoares3@gmail.com" style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, textDecoration: "none" }}>amartinssoares3@gmail.com</a>
+          <button onClick={() => setPrivacyOpen(true)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: 11, cursor: "pointer", padding: 0, textDecoration: "underline" }}>{t.privacy}</button>
           <span onClick={() => setMode('login')} title="Admin" style={{ color: "rgba(255,255,255,0.12)", fontSize: 14, cursor: "pointer", userSelect: "none" }}>⚙</span>
         </div>
       </div>
